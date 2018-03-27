@@ -1,12 +1,7 @@
 <!-- This file may be overwritten by automation. Only values allowed here are VersionPrefix and VersionSuffix.  -->
 <Project>
     <PropertyGroup>
-<<<<<<< HEAD
         <VersionPrefix>5.3.0</VersionPrefix>
-        <VersionSuffix>preview</VersionSuffix>
-=======
-        <VersionPrefix>5.2.2</VersionPrefix>
         <VersionSuffix>internal</VersionSuffix>
->>>>>>> marked nuget packages as internal
     </PropertyGroup>
 </Project>
