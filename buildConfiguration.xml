@@ -30,6 +30,7 @@
       <project name="Microsoft.IdentityModel.Protocols.Tests" test="yes" />
       <project name="Microsoft.IdentityModel.Protocols.WsFederation.Tests" test="yes" />
       <project name="Microsoft.IdentityModel.Protocols.OpenIdConnect.Tests" test="yes" />
+      <project name="Microsoft.IdentityModel.Tokens.Extensions.Tests" test="yes" />
     </test>
   </projects>
 </root>
