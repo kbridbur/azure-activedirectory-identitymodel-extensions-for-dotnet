@@ -31,6 +31,8 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
     using System.Linq;
     using System.Security.Cryptography;
     using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.Azure.KeyVault;
     using Microsoft.Azure.KeyVault.WebKey;
     using Microsoft.IdentityModel.Logging;
     using Microsoft.IdentityModel.Tokens;
@@ -40,7 +42,8 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
     /// </summary>
     public class KeyVaultEncryptionProvider : AuthenticatedEncryptionProvider, IDisposable
     {
-        private readonly KeyVaultEncryptionSecurityKey _keyVaultSecurityKey;
+        private readonly IKeyVaultClient _client;
+        private readonly KeyVaultSecurityKey _key;
         private bool _disposed = false;
 
         /// <summary>
@@ -51,7 +54,8 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
         public KeyVaultEncryptionProvider(SecurityKey key, string algorithm)
             : base(key, algorithm)
         {
-            _keyVaultSecurityKey = key as KeyVaultEncryptionSecurityKey ?? throw LogHelper.LogArgumentNullException(nameof(key));
+            _key = key as KeyVaultSecurityKey ?? throw LogHelper.LogArgumentException<ArgumentException>(nameof(key), $"");
+            _client = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(_key.Callback));
         }
 
         /// <summary>
@@ -64,7 +68,7 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
         /// <returns>decrypted ciphertext</returns>
         public override byte[] Decrypt(byte[] ciphertext, byte[] authenticatedData, byte[] iv, byte[] authenticationTag)
         {
-            return _keyVaultSecurityKey.DecryptAsync(Algorithm, ciphertext, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
+            return DecryptAsync(ciphertext, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -75,7 +79,7 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
             if (!_disposed)
             {
                 _disposed = true;
-                _keyVaultSecurityKey.Dispose();
+                _client.Dispose();
             }
         }
 
@@ -99,7 +103,7 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
         /// <returns><see cref="AuthenticatedEncryptionResult"/>containing ciphertext, iv, authenticationtag.</returns>
         public override AuthenticatedEncryptionResult Encrypt(byte[] plaintext, byte[] authenticatedData, byte[] iv)
         {
-            return new AuthenticatedEncryptionResult(_keyVaultSecurityKey, _keyVaultSecurityKey.EncryptAsync(Algorithm, plaintext, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult(), iv, authenticationTag: null);
+            return EncryptAsync(plaintext, authenticatedData, iv, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -109,8 +113,8 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
         /// <returns><see cref="byte"/>[] that is used to populated the KeyedHashAlgorithm.</returns>
         protected override byte[] GetKeyBytes(SecurityKey key)
         {
-            if (key is KeyVaultEncryptionSecurityKey encryptionSecurityKey)
-                return encryptionSecurityKey.SymmetricKey;
+            if (key is KeyVaultSecurityKey keyVaultSecurityKey)
+                return keyVaultSecurityKey.SymmetricKey;
 
             return base.GetKeyBytes(key);
         }
@@ -123,7 +127,7 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
         /// <returns>true if 'key, algorithm' pair is supported.</returns>
         protected override bool IsSupportedAlgorithm(SecurityKey key, string algorithm)
         {
-            return key is KeyVaultEncryptionSecurityKey
+            return key is KeyVaultSecurityKey
                 && JsonWebKeyEncryptionAlgorithm.AllAlgorithms.Contains(algorithm, StringComparer.Ordinal);
         }
 
@@ -137,6 +141,30 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
         protected override void ValidateKeySize(SecurityKey key, string algorithm)
         {
             base.ValidateKeySize(key, algorithm);
+        }
+
+        /// <summary>
+        /// Decrypts cipher text data using Azure Key Vault.
+        /// </summary>
+        /// <param name="ciphertext">the encrypted text to decrypt.</param>
+        /// <param name="cancellation">Propagates notification that operations should be canceled.</param>
+        /// <returns></returns>
+        private async Task<byte[]> DecryptAsync(byte[] ciphertext, CancellationToken cancellation)
+        {
+            return (await _client.DecryptAsync(_key.KeyId, Algorithm, ciphertext, cancellation).ConfigureAwait(false)).Result;
+        }
+
+        /// <summary>
+        /// Encrypts plain text data using Azure Key Vault.
+        /// </summary>
+        /// <param name="plaintext">the data to be encrypted.</param>
+        /// <param name="authenticatedData">will be combined with iv and ciphertext to create an authenticationtag.</param>
+        /// <param name="iv">initialization vector for encryption.</param>
+        /// <param name="cancellation">Propagates notification that operations should be canceled.</param>
+        /// <returns><see cref="AuthenticatedEncryptionResult"/>containing ciphertext, iv, authenticationtag.</returns>
+        private async Task<AuthenticatedEncryptionResult> EncryptAsync(byte[] plaintext, byte[] authenticatedData, byte[] iv, CancellationToken cancellation)
+        {
+            return new AuthenticatedEncryptionResult(Key, (await _client.EncryptAsync(_key.KeyId, Algorithm, plaintext, cancellation).ConfigureAwait(false)).Result, iv, authenticationTag: null);
         }
     }
 }

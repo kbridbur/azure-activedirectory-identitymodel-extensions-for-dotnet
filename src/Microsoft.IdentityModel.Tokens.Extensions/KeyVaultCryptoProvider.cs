@@ -56,24 +56,29 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
         /// <remarks>call <see cref="ICryptoProvider.Release(object)"/> when finished with the object.</remarks>
         public object Create(string algorithm, params object[] args)
         {
-            var key = args.FirstOrDefault();
-            if (key is KeyVaultEncryptionSecurityKey encryptionSecurityKey)
-                return new KeyVaultEncryptionProvider(encryptionSecurityKey, algorithm);
-            else if (key is KeyVaultKeyWrapSecurityKey keyWrapSecurityKey)
-                return new KeyVaultKeyWrapProvider(keyWrapSecurityKey, algorithm);
-            else if (key is KeyVaultSignatureSecurityKey signatureSecurityKey)
+            if (args.FirstOrDefault() is KeyVaultSecurityKey key)
             {
-                var willCreateSignatures = (bool)(args.Skip(1).FirstOrDefault() ?? false);
+                if (JsonWebKeyEncryptionAlgorithm.AllAlgorithms.Contains(algorithm, StringComparer.Ordinal))
+                {
+                    if (args.Skip(1).FirstOrDefault() is bool /* willUnwrap */)
+                        return new KeyVaultKeyWrapProvider(key, algorithm);
 
-                if (_cache.TryGetSignatureProvider(signatureSecurityKey, algorithm, typeofProvider: (key?.GetType() ?? typeof(SecurityKey)).ToString(), willCreateSignatures, out var cachedProvider))
-                    return cachedProvider;
+                    return new KeyVaultEncryptionProvider(key, algorithm);
+                }
+                else if (JsonWebKeySignatureAlgorithm.AllAlgorithms.Contains(algorithm, StringComparer.Ordinal))
+                {
+                    var willCreateSignatures = (bool)(args.Skip(1).FirstOrDefault() ?? false);
 
-                var signatureProvider = new KeyVaultSignatureProvider(signatureSecurityKey, algorithm, willCreateSignatures);
-                _cache.TryAdd(signatureProvider);
-                return signatureProvider;
+                    if (_cache.TryGetSignatureProvider(key, algorithm, typeofProvider: key.GetType().ToString(), willCreateSignatures, out var cachedProvider))
+                        return cachedProvider;
+
+                    var signatureProvider = new KeyVaultSignatureProvider(key, algorithm, willCreateSignatures);
+                    _cache.TryAdd(signatureProvider);
+                    return signatureProvider;
+                }
             }
-            else
-                throw LogHelper.LogExceptionMessage(new NotSupportedException(LogHelper.FormatInvariant(LogMessages.IDX10652, algorithm)));
+
+            throw LogHelper.LogExceptionMessage(new NotSupportedException(LogHelper.FormatInvariant(LogMessages.IDX10652, algorithm)));
         }
 
         /// <summary>
@@ -84,9 +89,8 @@ namespace Microsoft.IdentityModel.Tokens.Extensions
         /// <returns>true if supported</returns>
         public bool IsSupportedAlgorithm(string algorithm, params object[] args)
         {
-            return args.FirstOrDefault() is KeyVaultSecurityKey key
-                && ((key is KeyVaultSignatureSecurityKey && JsonWebKeySignatureAlgorithm.AllAlgorithms.Contains(algorithm, StringComparer.Ordinal))
-                || ((key is KeyVaultEncryptionSecurityKey || key is KeyVaultKeyWrapSecurityKey) && JsonWebKeyEncryptionAlgorithm.AllAlgorithms.Contains(algorithm, StringComparer.Ordinal)));
+            return args.FirstOrDefault() is KeyVaultSecurityKey
+                && (JsonWebKeyEncryptionAlgorithm.AllAlgorithms.Contains(algorithm, StringComparer.Ordinal) || JsonWebKeySignatureAlgorithm.AllAlgorithms.Contains(algorithm, StringComparer.Ordinal));
         }
 
         /// <summary>
