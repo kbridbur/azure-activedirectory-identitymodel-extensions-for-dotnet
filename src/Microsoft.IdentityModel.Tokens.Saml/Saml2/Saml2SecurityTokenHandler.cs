@@ -127,7 +127,8 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (reader == null)
                 return false;
 
-            return reader.IsStartElement(Saml2Constants.Elements.Assertion, Saml2Constants.Namespace);
+            return (reader.IsStartElement(Saml2Constants.Elements.Assertion, Saml2Constants.Namespace)
+                   || reader.IsStartElement(Saml2Constants.Elements.EncryptedAssertion, Saml2Constants.Namespace));
         }
 
         /// <summary>
