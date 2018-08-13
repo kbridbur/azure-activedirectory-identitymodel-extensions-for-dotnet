@@ -130,6 +130,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                     Handler = new Saml2SecurityTokenHandler(),
                     TestId = nameof(ReferenceTokens.SamlToken_Valid),
                     Token = ReferenceTokens.SamlToken_Valid
+                },
+                new Saml2TheoryData
+                {
+                    CanRead = true,
+                    Handler = new Saml2SecurityTokenHandler(),
+                    TestId = nameof(ReferenceTokens.Saml2Token_EncryptedAssertion_Valid),
+                    Token = ReferenceTokens.Saml2Token_EncryptedAssertion_Valid
                 }
             };
         }
