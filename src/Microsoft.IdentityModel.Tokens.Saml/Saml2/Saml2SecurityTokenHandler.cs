@@ -158,6 +158,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             var assertion = new Saml2Assertion(CreateIssuerNameIdentifier(tokenDescriptor))
             {
                 Subject = CreateSubject(tokenDescriptor),
+                EncryptingCredentials = tokenDescriptor.EncryptingCredentials,
                 SigningCredentials = tokenDescriptor.SigningCredentials,
                 Conditions = CreateConditions(tokenDescriptor),
                 Advice = CreateAdvice(tokenDescriptor)

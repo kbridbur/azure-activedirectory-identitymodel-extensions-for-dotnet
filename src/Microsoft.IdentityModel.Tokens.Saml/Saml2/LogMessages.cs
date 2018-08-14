@@ -97,6 +97,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13306 = "IDX13306: Multiple name identifier claim is not allowed in tokenDescriptor.Subject.Claims.";
         internal const string IDX13310 = "IDX13310: SAML2 AuthorizationDecision DecisionType must be 'Permit', 'Deny' or 'Indeterminate'.";
 
+        // Saml2 EncryptedAssertion
+        internal const string IDX13600 = "IDX13600: Unable to obtain a CryptoProviderFactory, EncryptingCredentials.CryptoProviderFactory and EncryptingCredentials.Key.CrypoProviderFactory are both null.";
+        internal const string IDX13601 = "IDX13601: SAML2 Encryption failed. No support for: Encryption algorithm: '{0}', SecurityKey: '{1}'.";
+        internal const string IDX13602 = "IDX13602: Failed to create the token encryption provider.";
+        internal const string IDX13603 = "IDX13603: Encryption failed. EncryptionProvider failed for: Algorithm: '{0}', SecurityKey: '{1}'. See inner exception.";
+        internal const string IDX13604 = "IDX13604: Exception thrown while writing EncrytedData element. See inner exception.";
+
         // IDX11900 - AuthorizationDecisionStatement
         internal const string IDX13900 = "IDX13900: Unable to write Saml2Assertion: {0} is required, {1} is null or empty.";
         internal const string IDX13901 = "IDX13901: Unable to write Saml2Assertion: {0}.{1} is empty. This statement must contain at least one Action.";

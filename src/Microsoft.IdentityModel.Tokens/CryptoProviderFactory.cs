@@ -476,6 +476,142 @@ namespace Microsoft.IdentityModel.Tokens
             return SupportedAlgorithms.IsSupportedAlgorithm(algorithm, key);
         }
 
+        private bool IsSupportedAuthenticatedEncryptionAlgorithm(string algorithm, SecurityKey key)
+        {
+            if (key == null)
+                return false;
+
+            if (string.IsNullOrEmpty(algorithm))
+                return false;
+
+            if (!(algorithm.Equals(SecurityAlgorithms.Aes128CbcHmacSha256, StringComparison.Ordinal)
+               || algorithm.Equals(SecurityAlgorithms.Aes192CbcHmacSha384, StringComparison.Ordinal)
+               || algorithm.Equals(SecurityAlgorithms.Aes256CbcHmacSha512, StringComparison.Ordinal)
+               || algorithm.Equals(SecurityAlgorithms.Aes128Gcm, StringComparison.Ordinal)
+               || algorithm.Equals(SecurityAlgorithms.Aes192Gcm, StringComparison.Ordinal)
+               || algorithm.Equals(SecurityAlgorithms.Aes256Gcm, StringComparison.Ordinal)))
+                return false;
+
+            if (key is SymmetricSecurityKey)
+                return true;
+
+            if (key is JsonWebKey jsonWebKey)
+                return (jsonWebKey.K != null && jsonWebKey.Kty == JsonWebAlgorithmsKeyTypes.Octet);
+
+            return false;
+        }
+
+        private bool IsSupportedEcdsaAlgorithm(string algorithm)
+        {
+            switch (algorithm)
+            {
+                case SecurityAlgorithms.EcdsaSha256:
+                case SecurityAlgorithms.EcdsaSha256Signature:
+                case SecurityAlgorithms.EcdsaSha384:
+                case SecurityAlgorithms.EcdsaSha384Signature:
+                case SecurityAlgorithms.EcdsaSha512:
+                case SecurityAlgorithms.EcdsaSha512Signature:
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool IsSupportedHashAlgorithm(string algorithm)
+        {
+            switch (algorithm)
+            {
+                case SecurityAlgorithms.Sha256:
+                case SecurityAlgorithms.Sha256Digest:
+                case SecurityAlgorithms.Sha384:
+                case SecurityAlgorithms.Sha384Digest:
+                case SecurityAlgorithms.Sha512:
+                case SecurityAlgorithms.Sha512Digest:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        private bool IsSupportedKeyWrapAlgorithm(string algorithm, SecurityKey key)
+        {
+            if (key == null)
+                return false;
+
+            if (string.IsNullOrEmpty(algorithm))
+                return false;
+
+            if (algorithm.Equals(SecurityAlgorithms.RsaPKCS1, StringComparison.Ordinal)
+                || algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)
+                || algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap, StringComparison.Ordinal))
+            {
+                if (key is RsaSecurityKey)
+                    return true;
+
+                if (key is X509SecurityKey x509Key)
+                {
+#if NETSTANDARD1_4
+                    if (x509Key.PublicKey as RSA == null)
+                        return false;
+#else
+                    if (x509Key.PublicKey as RSACryptoServiceProvider == null)
+                        return false;
+#endif
+                }
+
+                if (key is JsonWebKey jsonWebKey && jsonWebKey.Kty == JsonWebAlgorithmsKeyTypes.RSA)
+                    return true;
+
+                return false;
+            }
+
+            return false;
+        }
+
+        private bool IsSupportedRsaAlgorithm(string algorithm)
+        {
+            switch (algorithm)
+            {
+                case SecurityAlgorithms.RsaSha256:
+                case SecurityAlgorithms.RsaSha384:
+                case SecurityAlgorithms.RsaSha512:
+                case SecurityAlgorithms.RsaSha256Signature:
+                case SecurityAlgorithms.RsaSha384Signature:
+                case SecurityAlgorithms.RsaSha512Signature:
+                case SecurityAlgorithms.RsaOAEP:
+                case SecurityAlgorithms.RsaPKCS1:
+                case SecurityAlgorithms.RsaOaepKeyWrap:
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool IsSupportedSymmetricAlgorithm(string algorithm)
+        {
+            switch (algorithm)
+            {
+                case SecurityAlgorithms.Aes128CbcHmacSha256:
+                case SecurityAlgorithms.Aes192CbcHmacSha384:
+                case SecurityAlgorithms.Aes256CbcHmacSha512:
+                case SecurityAlgorithms.Aes128Gcm:
+                case SecurityAlgorithms.Aes192Gcm:
+                case SecurityAlgorithms.Aes256Gcm:
+                case SecurityAlgorithms.Aes128KW:
+                case SecurityAlgorithms.Aes256KW:
+                case SecurityAlgorithms.HmacSha256Signature:
+                case SecurityAlgorithms.HmacSha384Signature:
+                case SecurityAlgorithms.HmacSha512Signature:
+                case SecurityAlgorithms.HmacSha256:
+                case SecurityAlgorithms.HmacSha384:
+                case SecurityAlgorithms.HmacSha512:
+                    return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// When finished with a <see cref="HashAlgorithm"/> call this method for cleanup. The default behavior is to call <see cref="HashAlgorithm.Dispose()"/>
         /// </summary>

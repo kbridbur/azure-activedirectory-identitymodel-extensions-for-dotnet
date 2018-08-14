@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Xml;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.IdentityModel.Xml
@@ -216,6 +217,24 @@ namespace Microsoft.IdentityModel.Xml
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="writer"></param>
+        internal void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement(XmlSignatureConstants.PreferredPrefix, XmlSignatureConstants.Elements.KeyInfo, XmlSignatureConstants.Namespace);
+
+            if (!string.IsNullOrEmpty(KeyName))
+            {
+                writer.WriteStartElement(XmlSignatureConstants.PreferredPrefix, XmlSignatureConstants.Elements.KeyName);
+                writer.WriteValue(KeyName);
+                writer.WriteEndElement();
+            }
+
+            writer.WriteEndElement();
         }
     }
 }

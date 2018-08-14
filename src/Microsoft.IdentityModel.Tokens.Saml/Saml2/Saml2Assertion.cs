@@ -85,6 +85,15 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         }
 
         /// <summary>
+        /// Gets or sets the credentials used for encrypting the assertion.
+        /// </summary>
+        public EncryptingCredentials EncryptingCredentials
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="Saml2Id"/> identifier for this assertion. [Saml2Core, 2.3.3]
         /// </summary>
         /// <exception cref="ArgumentNullException">if 'value' if null.</exception>

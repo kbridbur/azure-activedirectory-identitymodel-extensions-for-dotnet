@@ -27,8 +27,12 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Xml;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Xml;
 using static Microsoft.IdentityModel.Logging.LogHelper;
 
@@ -199,6 +203,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// <returns>A <see cref="Saml2Assertion"/> instance.</returns>
         public virtual Saml2Assertion ReadAssertion(XmlReader reader)
         {
+            //geok: TODO
             if (reader.IsStartElement(Saml2Constants.Elements.EncryptedAssertion, Saml2Constants.Namespace))
                 throw LogExceptionMessage(new NotSupportedException(LogMessages.IDX13141));
 
@@ -236,7 +241,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 // will move to next element
                 // <ds:Signature> 0-1 read by EnvelopedSignatureReader
                 envelopeReader.Read();
-               
+
                 // <Issuer> 1
                 assertion.Issuer = ReadIssuer(envelopeReader);
 
@@ -1398,7 +1403,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 // No declaration, or declaring that this is just a "BaseID", is invalid since statement is abstract
                 if (declaredType == null
                     || XmlUtil.EqualsQName(declaredType, Saml2Constants.Types.BaseIDAbstractType, Saml2Constants.Namespace))
-                    throw LogReadException(LogMessages.IDX13103, Saml2Constants.Elements.BaseID, declaredType, GetType(), "ReadSubjectId" );
+                    throw LogReadException(LogMessages.IDX13103, Saml2Constants.Elements.BaseID, declaredType, GetType(), "ReadSubjectId");
 
                 // If it's NameID we can handle it
                 if (XmlUtil.EqualsQName(declaredType, Saml2Constants.Types.NameIDType, Saml2Constants.Namespace))
@@ -1533,6 +1538,33 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (assertion == null)
                 throw LogArgumentNullException(nameof(assertion));
 
+            // When EncryptingCredentials is not null - Assertion will be encrypted
+            if (assertion.EncryptingCredentials != null)
+                WriteEncryptedAssertion(writer, assertion);            
+            else 
+                WritePlaintextAssertion(writer, assertion);
+        }
+
+        // Assertion will be written to a plaintextStream and then encrypted
+        private void WriteEncryptedAssertion(XmlWriter writer, Saml2Assertion assertion)
+        {
+            XmlWriter originalWriter = writer;
+            MemoryStream plaintextStream = new MemoryStream();
+            XmlDictionaryWriter plaintextWriter = XmlDictionaryWriter.CreateTextWriter(plaintextStream, Encoding.UTF8, false);
+            writer = plaintextWriter; 
+
+            WritePlaintextAssertion(writer, assertion);
+
+            ((IDisposable)plaintextWriter).Dispose();
+            plaintextWriter = null;
+
+            originalWriter.WriteStartElement(Prefix, Saml2Constants.Elements.EncryptedAssertion, Saml2Constants.Namespace);
+            EncryptAndWriteAssertionData(originalWriter, plaintextStream.ToArray(), assertion);
+            originalWriter.WriteEndElement();
+        }
+
+        private void WritePlaintextAssertion(XmlWriter writer, Saml2Assertion assertion)
+        {
             // Wrap the writer if necessary for a signature
             // We do not dispose this writer, since as a delegating writer it would
             // dispose the inner writer, which we don't properly own.
@@ -1559,7 +1591,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 }
             }
 
-            // <Assertion>
             writer.WriteStartElement(Prefix, Saml2Constants.Elements.Assertion, Saml2Constants.Namespace);
 
             // @ID - required
@@ -1590,11 +1621,62 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (null != assertion.Advice)
                 WriteAdvice(writer, assertion.Advice);
 
-            // <Statement|AuthnStatement|AuthzDecisionStatement|AttributeStatement>, 0-OO
-            foreach (Saml2Statement statement in assertion.Statements)
-                WriteStatement(writer, statement);
-
             writer.WriteEndElement();
+        }
+
+        private void EncryptAndWriteAssertionData(XmlWriter writer, byte[] assertionData, Saml2Assertion assertion)
+        {
+            EncryptingCredentials encryptingCredentials = assertion.EncryptingCredentials;
+            var cryptoProviderFactory = encryptingCredentials.CryptoProviderFactory ?? encryptingCredentials.Key.CryptoProviderFactory;
+
+            if (cryptoProviderFactory == null)
+                throw LogExceptionMessage(new ArgumentException(LogMessages.IDX13600));
+
+            if (!cryptoProviderFactory.IsSupportedAlgorithm(encryptingCredentials.Enc, encryptingCredentials.Key))
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13601, encryptingCredentials.Enc, encryptingCredentials.Key)));
+
+            //pre-shared symmetric key (session key)
+            if (encryptingCredentials.Key is SymmetricSecurityKey) 
+            {
+                AuthenticatedEncryptionResult authenticatedEncryptionResult = null;
+                var authenticatedEncryptionProvider = cryptoProviderFactory.CreateAuthenticatedEncryptionProvider(encryptingCredentials.Key, encryptingCredentials.Enc);
+                if (authenticatedEncryptionProvider == null)
+                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13602));
+
+                try
+                {
+                    authenticatedEncryptionResult = authenticatedEncryptionProvider.Encrypt(assertionData);
+                }
+                catch (Exception ex)
+                {
+                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13603, encryptingCredentials.Enc, encryptingCredentials.Key), ex));
+                }
+
+                EncryptedData encryptedData = new EncryptedData();
+                encryptedData.CipherData.CipherValue = Utility.ConcatByteArrays(authenticatedEncryptionResult.IV, authenticatedEncryptionResult.Ciphertext, authenticatedEncryptionResult.AuthenticationTag);
+                encryptedData.EncryptionMethod = new EncryptionMethod(encryptingCredentials.Enc);
+                encryptedData.Type = XmlEncryptionConstants.EncryptedDataTypes.Element;
+                encryptedData.KeyInfo.KeyName = encryptingCredentials.Key.KeyId;
+
+                try
+                {
+                    encryptedData.WriteXml(writer); 
+
+                }
+                catch (Exception ex)
+                {
+                    throw LogExceptionMessage(new SecurityTokenEncryptionFailedException(FormatInvariant(LogMessages.IDX13604), ex));
+                }
+            }
+            else if (assertion.EncryptingCredentials.Key is AsymmetricSecurityKey)
+            {
+                //geok: TODO
+            }
+            else
+            {
+                //geok: TODO
+                //throw 
+            }
         }
 
         /// <summary>
@@ -1627,7 +1709,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 writer.WriteAttributeString(Saml2Constants.Attributes.FriendlyName, attribute.FriendlyName);
 
             // @OriginalIssuer - optional
-            if (attribute.OriginalIssuer != null )
+            if (attribute.OriginalIssuer != null)
                 writer.WriteAttributeString(Saml2Constants.Attributes.OriginalIssuer, Saml2Constants.ClaimType2009Namespace, attribute.OriginalIssuer);
 
             string xsiTypePrefix = null;
@@ -1826,7 +1908,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 throw LogArgumentNullException(nameof(statement));
 
             if (statement.Actions.Count == 0)
-                throw LogWriteException(LogMessages.IDX13901, statement.GetType(), "Actions" );
+                throw LogWriteException(LogMessages.IDX13901, statement.GetType(), "Actions");
 
             if (string.IsNullOrEmpty(statement.Decision))
                 throw LogWriteException(LogMessages.IDX13900, Saml2Constants.Attributes.Decision, nameof(statement.Decision));
@@ -1917,8 +1999,8 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 throw LogArgumentNullException(nameof(evidence));
 
             if (evidence.AssertionIdReferences.Count == 0
-            &&  evidence.Assertions.Count == 0
-            &&  evidence.AssertionUriReferences.Count == 0 )
+            && evidence.Assertions.Count == 0
+            && evidence.AssertionUriReferences.Count == 0)
                 throw LogWriteException(LogMessages.IDX13902);
 
             // <Evidence>
@@ -2105,7 +2187,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 throw LogArgumentNullException(nameof(subject));
 
             // If there's no ID, there has to be a SubjectConfirmation
-            if (subject.NameId  == null && 0 == subject.SubjectConfirmations.Count)
+            if (subject.NameId == null && 0 == subject.SubjectConfirmations.Count)
                 throw LogExceptionMessage(new Saml2SecurityTokenException(FormatInvariant(LogMessages.IDX13305, subject)));
 
             // <Subject>

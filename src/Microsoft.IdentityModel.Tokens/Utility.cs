@@ -268,5 +268,24 @@ namespace Microsoft.IdentityModel.Tokens
                 byteArray[i] = 0;
             }
         }
+
+        internal static byte[] ConcatByteArrays(params byte[][] list)
+        {
+            int outputLength = 0;
+            for (int i = 0; i < list.Length; i++)
+                outputLength += list[i].Length;
+
+            byte[] outputBytes = new byte[outputLength];
+            
+            int dstOffset = 0;
+            for (int i = 0; i < list.Length; i++)
+            {
+                Array.Copy(list[i], 0, outputBytes, dstOffset, list[i].Length);
+                dstOffset += list[i].Length;
+            }
+
+            return outputBytes;
+        }
+
     }
 }

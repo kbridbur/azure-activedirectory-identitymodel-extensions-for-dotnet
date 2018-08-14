@@ -39,6 +39,10 @@ namespace Microsoft.IdentityModel.Tokens
         public const string Aes256Encryption = "http://www.w3.org/2001/04/xmlenc#aes256-cbc";
         public const string DesEncryption = "http://www.w3.org/2001/04/xmlenc#des-cbc";
 
+        public const string Aes128Gcm = "http://www.w3.org/2009/xmlenc11#aes128-gcm";
+        public const string Aes192Gcm = "http://www.w3.org/2009/xmlenc11#aes192-gcm";
+        public const string Aes256Gcm = "http://www.w3.org/2009/xmlenc11#aes256-gcm";
+
         // See: https://www.w3.org/TR/xmlenc-core1/#sec-kw-aes
         public const string Aes128KeyWrap = "http://www.w3.org/2001/04/xmlenc#kw-aes128";
         public const string Aes192KeyWrap = "http://www.w3.org/2001/04/xmlenc#kw-aes192";
@@ -114,7 +118,7 @@ namespace Microsoft.IdentityModel.Tokens
         public const string Aes256CbcHmacSha512 = "A256CBC-HS512";
 
         internal const string DefaultAsymmetricKeyWrapAlgorithm = RsaOaepKeyWrap;
-        internal const string DefaultSymmetricEncryptionAlgorithm = Aes128CbcHmacSha256;
+        internal const string DefaultSymmetricEncryptionAlgorithm = Aes128Gcm;
 
 #pragma warning restore 1591
     }
