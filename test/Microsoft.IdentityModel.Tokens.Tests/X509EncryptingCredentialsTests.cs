@@ -67,7 +67,7 @@ namespace Microsoft.IdentityModel.Tokens.Tests
                 {
                     Certificate = null,
                     Alg = SecurityAlgorithms.RsaOaepKeyWrap,
-                    Enc = SecurityAlgorithms.Aes128CbcHmacSha256,
+                    Enc = SecurityAlgorithms.Aes128Gcm,
                     ExpectedException = ExpectedException.ArgumentNullException("IDX10000: The parameter 'certificate'"),
                     TestId = "NullCertificate"
                 },
@@ -75,7 +75,7 @@ namespace Microsoft.IdentityModel.Tokens.Tests
                 {
                     Certificate = Default.Certificate,
                     Alg = String.Empty,
-                    Enc = SecurityAlgorithms.Aes128CbcHmacSha256,
+                    Enc = SecurityAlgorithms.Aes128Gcm,
                     ExpectedException = ExpectedException.ArgumentNullException("IDX10000: The parameter 'alg'"),
                     TestId = "EmptyAlgString"
                 },
@@ -91,7 +91,7 @@ namespace Microsoft.IdentityModel.Tokens.Tests
                 {
                     Certificate = Default.Certificate,
                     Alg = null,
-                    Enc = SecurityAlgorithms.Aes128CbcHmacSha256,
+                    Enc = SecurityAlgorithms.Aes128Gcm,
                     ExpectedException = ExpectedException.ArgumentNullException("IDX10000: The parameter 'alg'"),
                     TestId = "NullAlgString"
                 },
@@ -107,7 +107,7 @@ namespace Microsoft.IdentityModel.Tokens.Tests
                 {
                     Certificate = Default.Certificate,
                     Alg = SecurityAlgorithms.RsaOaepKeyWrap,
-                    Enc = SecurityAlgorithms.Aes128CbcHmacSha256,
+                    Enc = SecurityAlgorithms.Aes128Gcm,
                     TestId = "ValidTest"
                 }
             };
