@@ -99,10 +99,13 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
 
         // Saml2 EncryptedAssertion
         internal const string IDX13600 = "IDX13600: Unable to obtain a CryptoProviderFactory, EncryptingCredentials.CryptoProviderFactory and EncryptingCredentials.Key.CrypoProviderFactory are both null.";
-        internal const string IDX13601 = "IDX13601: SAML2 Encryption failed. No support for: Encryption algorithm: '{0}', SecurityKey: '{1}'.";
+        internal const string IDX13601 = "IDX13601: SAML2 Encryption failed. No support for algorithm: '{0}', SecurityKey: '{1}'.";
         internal const string IDX13602 = "IDX13602: Failed to create the token encryption provider.";
         internal const string IDX13603 = "IDX13603: Encryption failed. EncryptionProvider failed for: Algorithm: '{0}', SecurityKey: '{1}'. See inner exception.";
-        internal const string IDX13604 = "IDX13604: Exception thrown while writing EncrytedData element. See inner exception.";
+        internal const string IDX13604 = "IDX13604: Exception thrown while writing EncryptedData element. See inner exception.";
+        internal const string IDX13605 = "IDX13605: Exception thrown while writing EncryptedKey element. See inner exception.";
+        internal const string IDX13606 = "IDX13606: EncryptionCredentials.Key is not SymmetricSecurityKey or AsymmetricSecurityKey. EncryptionCredentials.Key: '{0}'.";
+        internal const string IDX13607 = "IDX13607: Session key encryption algorithm: '{0}' is not supported.";
 
         // IDX11900 - AuthorizationDecisionStatement
         internal const string IDX13900 = "IDX13900: Unable to write Saml2Assertion: {0} is required, {1} is null or empty.";

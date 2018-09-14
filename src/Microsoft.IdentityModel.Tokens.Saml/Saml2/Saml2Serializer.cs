@@ -1631,57 +1631,142 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         private void EncryptAndWriteAssertionData(XmlWriter writer, byte[] assertionData, Saml2Assertion assertion)
         {
             EncryptingCredentials encryptingCredentials = assertion.EncryptingCredentials;
+            EncryptedData encryptedData = null;
+            EncryptedKey encryptedKey = null;
+
+            // SymmetricSecurityKey is provided:
+            // Pre-shared symmetric key (session key) is used to encrypt an assertion
+            // Session key will not be serialized
+            if (encryptingCredentials.Key is SymmetricSecurityKey) 
+            {
+                encryptedData = CreateEncryptedData((SymmetricSecurityKey)encryptingCredentials.Key, encryptingCredentials.Enc, assertionData, encryptingCredentials);
+                encryptedData.KeyInfo.KeyName = encryptingCredentials.Key.KeyId;
+            }
+            // AsymmetricSecurityKey is provided:
+            // New session key will be created to encrypt an assertion
+            // Session key will be wrapped with provided AsymmetricSecurityKey
+            else if (encryptingCredentials.Key is AsymmetricSecurityKey)
+            {
+                SymmetricSecurityKey sessionKey = CreateSessionKey(encryptingCredentials.Enc);
+                encryptedData = CreateEncryptedData(sessionKey, encryptingCredentials.Enc, assertionData, encryptingCredentials);
+                encryptedData.KeyInfo.RetrievalMethodUri = assertion.EncryptingCredentials.Key.KeyId;
+
+                encryptedKey = CreateEncryptedKey((AsymmetricSecurityKey)encryptingCredentials.Key, sessionKey, encryptingCredentials.Alg, encryptingCredentials);
+                encryptedKey.AddReference(new DataReference(encryptedData.Id));
+            }
+            else
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13606, encryptingCredentials.Key)));
+            }
+
+            // write to XML
+            try
+            {
+                encryptedData.WriteXml(writer);
+
+            }
+            catch (Exception ex)
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13604), ex));
+            }
+
+            if (encryptedKey != null)
+            {
+                try
+                {
+                    encryptedKey.WriteXml(writer);
+
+                }
+                catch (Exception ex)
+                {
+                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13605), ex));
+                }
+            }
+
+        }
+
+        private CryptoProviderFactory GetCryptoProviderFactory(SecurityKey key, string algorithm, EncryptingCredentials encryptingCredentials)
+        {
             var cryptoProviderFactory = encryptingCredentials.CryptoProviderFactory ?? encryptingCredentials.Key.CryptoProviderFactory;
 
             if (cryptoProviderFactory == null)
                 throw LogExceptionMessage(new ArgumentException(LogMessages.IDX13600));
 
-            if (!cryptoProviderFactory.IsSupportedAlgorithm(encryptingCredentials.Enc, encryptingCredentials.Key))
-                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13601, encryptingCredentials.Enc, encryptingCredentials.Key)));
+            if (!cryptoProviderFactory.IsSupportedAlgorithm(algorithm, key))
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13601, algorithm, key)));
 
-            //pre-shared symmetric key (session key)
-            if (encryptingCredentials.Key is SymmetricSecurityKey) 
-            {
-                AuthenticatedEncryptionResult authenticatedEncryptionResult = null;
-                var authenticatedEncryptionProvider = cryptoProviderFactory.CreateAuthenticatedEncryptionProvider(encryptingCredentials.Key, encryptingCredentials.Enc);
-                if (authenticatedEncryptionProvider == null)
-                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13602));
-
-                try
-                {
-                    authenticatedEncryptionResult = authenticatedEncryptionProvider.Encrypt(assertionData);
-                }
-                catch (Exception ex)
-                {
-                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13603, encryptingCredentials.Enc, encryptingCredentials.Key), ex));
-                }
-
-                EncryptedData encryptedData = new EncryptedData();
-                encryptedData.CipherData.CipherValue = Utility.ConcatByteArrays(authenticatedEncryptionResult.IV, authenticatedEncryptionResult.Ciphertext, authenticatedEncryptionResult.AuthenticationTag);
-                encryptedData.EncryptionMethod = new EncryptionMethod(encryptingCredentials.Enc);
-                encryptedData.Type = XmlEncryptionConstants.EncryptedDataTypes.Element;
-                encryptedData.KeyInfo.KeyName = encryptingCredentials.Key.KeyId;
-
-                try
-                {
-                    encryptedData.WriteXml(writer); 
-
-                }
-                catch (Exception ex)
-                {
-                    throw LogExceptionMessage(new SecurityTokenEncryptionFailedException(FormatInvariant(LogMessages.IDX13604), ex));
-                }
-            }
-            else if (assertion.EncryptingCredentials.Key is AsymmetricSecurityKey)
-            {
-                //geok: TODO
-            }
-            else
-            {
-                //geok: TODO
-                //throw 
-            }
+            return cryptoProviderFactory;
         }
+
+        private SymmetricSecurityKey CreateSessionKey(string algorithm)
+        {
+            if (string.IsNullOrEmpty(algorithm))
+                throw LogHelper.LogArgumentNullException(nameof(algorithm));
+
+            int keySize = -1;
+
+            if (SecurityAlgorithms.Aes128Gcm.Equals(algorithm, StringComparison.Ordinal))
+                keySize = 128;
+            else if (SecurityAlgorithms.Aes192Gcm.Equals(algorithm, StringComparison.Ordinal))
+                keySize = 192;
+            else if (SecurityAlgorithms.Aes256Gcm.Equals(algorithm, StringComparison.Ordinal))
+                keySize = 256;
+
+            if (keySize == -1)
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13607, algorithm)));
+            }
+
+            var aes = Aes.Create();
+            aes.KeySize = keySize;
+            aes.GenerateKey();
+            var sessionKey = new SymmetricSecurityKey(aes.Key);
+            return sessionKey;
+        }
+
+        private EncryptedData CreateEncryptedData(SymmetricSecurityKey key, string algorithm, byte[] assertionData, EncryptingCredentials encryptingCredentials)
+        {
+            var cryptoProviderFactory = GetCryptoProviderFactory(key, algorithm, encryptingCredentials);
+            AuthenticatedEncryptionResult authenticatedEncryptionResult = null;
+            var authenticatedEncryptionProvider = cryptoProviderFactory.CreateAuthenticatedEncryptionProvider(key, algorithm);
+            if (authenticatedEncryptionProvider == null)
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13602));
+
+            try
+            {
+                authenticatedEncryptionResult = authenticatedEncryptionProvider.Encrypt(assertionData);
+            }
+            catch (Exception ex)
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13603, algorithm, key), ex));
+            }
+
+            var encryptedData = new EncryptedData();
+            encryptedData.CipherData.CipherValue = Utility.ConcatByteArrays(authenticatedEncryptionResult.IV, authenticatedEncryptionResult.Ciphertext, authenticatedEncryptionResult.AuthenticationTag);
+            encryptedData.EncryptionMethod = new EncryptionMethod(algorithm);
+            encryptedData.Type = XmlEncryptionConstants.EncryptedDataTypes.Element;
+            encryptedData.Id = new Saml2Id().Value;
+
+            return encryptedData;
+        }
+
+        private EncryptedKey CreateEncryptedKey(AsymmetricSecurityKey key, SymmetricSecurityKey sessionKey, string algorithm, EncryptingCredentials encryptingCredentials)
+        {
+            var cryptoProviderFactory = GetCryptoProviderFactory(key, algorithm, encryptingCredentials);
+            var encryptedKey = new EncryptedKey
+            {
+                Id = key.KeyId,
+                EncryptionMethod = new EncryptionMethod(algorithm)
+            };
+
+            var keyWrapProvider = cryptoProviderFactory.CreateKeyWrapProvider(key, algorithm);
+            var wrappedKey = keyWrapProvider.WrapKey(sessionKey.Key);
+
+            encryptedKey.CipherData.CipherValue = wrappedKey;
+
+            return encryptedKey;
+        }
+
 
         /// <summary>
         /// Writes the &lt;saml:Attribute> element.

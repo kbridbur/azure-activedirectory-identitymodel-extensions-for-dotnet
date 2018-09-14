@@ -45,7 +45,7 @@ namespace Microsoft.IdentityModel.Xml
             if (!string.IsNullOrEmpty(Type))
                 writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Type, null, Type);
 
-            if (!string.IsNullOrEmpty(Id))
+            if (!string.IsNullOrEmpty(MimeType))
                 writer.WriteAttributeString(XmlEncryptionConstants.Attributes.MimeType, null, MimeType);
 
             if (!string.IsNullOrEmpty(Encoding))

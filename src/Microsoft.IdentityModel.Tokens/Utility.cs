@@ -286,6 +286,5 @@ namespace Microsoft.IdentityModel.Tokens
 
             return outputBytes;
         }
-
     }
 }

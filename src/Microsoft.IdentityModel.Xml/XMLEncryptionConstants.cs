@@ -13,9 +13,9 @@ namespace Microsoft.IdentityModel.Xml
     internal static class XmlEncryptionConstants
     {
 #pragma warning disable 1591
-        public const string Namespace = "http://www.w3.org/2009/xmlenc11#";
+        public const string Namespace = "http://www.w3.org/2001/04/xmlenc#";
 
-        public const string Prefix = "xenc11";
+        public const string Prefix = "xenc";
 
         public static class Attributes
         {
@@ -50,6 +50,7 @@ namespace Microsoft.IdentityModel.Xml
         {
             public const string Element = Namespace + "Element";
             public const string Content = Namespace + "Content";
+            public const string EncryptedKey = Namespace + "EncryptedKey";
 #pragma warning restore 1591
         }
     }

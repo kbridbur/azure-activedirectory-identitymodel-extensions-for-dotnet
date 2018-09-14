@@ -99,8 +99,28 @@ namespace Microsoft.IdentityModel.Xml
 
         internal void WriteXml(XmlWriter writer)
         {
-            writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.EncryptedData, XmlEncryptionConstants.Namespace);
-            //
+            writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.EncryptedKey, XmlEncryptionConstants.Namespace);
+
+            if (!string.IsNullOrEmpty(Id))
+                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Id, null, Id);
+
+            if (EncryptionMethod != null)
+                EncryptionMethod.WriteXml(writer);
+
+            CipherData.WriteXml(writer); //required
+
+            if (ReferenceList.Count != 0)
+            {
+                writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.ReferenceList);
+
+                foreach(var reference in ReferenceList)
+                {
+                    reference.WriteXml(writer);
+                }
+
+                writer.WriteEndElement();
+            }
+
             writer.WriteEndElement();
         }
     }

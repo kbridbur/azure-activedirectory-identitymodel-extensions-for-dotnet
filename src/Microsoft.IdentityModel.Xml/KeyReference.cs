@@ -25,6 +25,8 @@
 //
 //------------------------------------------------------------------------------
 
+using System.Xml;
+
 namespace Microsoft.IdentityModel.Xml
 {
     /// <summary>
@@ -48,6 +50,16 @@ namespace Microsoft.IdentityModel.Xml
         public KeyReference(string uri) : base(uri)
         {
             ReferenceType = "KeyReference";
+        }
+
+        internal override void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.KeyReference, null);
+
+            if (!string.IsNullOrEmpty(Uri))
+                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Uri, Uri);
+
+            writer.WriteEndElement();
         }
     }
 }

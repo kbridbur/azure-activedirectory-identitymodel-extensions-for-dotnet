@@ -25,6 +25,8 @@
 //
 //------------------------------------------------------------------------------
 
+using System.Xml;
+
 namespace Microsoft.IdentityModel.Xml
 {
     /// <summary>
@@ -46,6 +48,7 @@ namespace Microsoft.IdentityModel.Xml
         /// <param name="uri"></param>
         protected EncryptedReference(string uri)
         {
+            Uri = uri;
         }
 
         /// <summary>
@@ -57,5 +60,7 @@ namespace Microsoft.IdentityModel.Xml
         /// Gets or sets a reference type.
         /// </summary>
         protected string ReferenceType { get; set; }
+
+        abstract internal void WriteXml(XmlWriter writer);
     }
 }

@@ -234,6 +234,14 @@ namespace Microsoft.IdentityModel.Xml
                 writer.WriteEndElement();
             }
 
+            if (!string.IsNullOrEmpty(RetrievalMethodUri))
+            {
+                writer.WriteStartElement(XmlSignatureConstants.PreferredPrefix, XmlSignatureConstants.Elements.RetrievalMethod, null);
+                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Uri, null, RetrievalMethodUri);
+                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Type, null, XmlEncryptionConstants.EncryptedDataTypes.EncryptedKey);
+                writer.WriteEndElement();
+            }
+
             writer.WriteEndElement();
         }
     }
