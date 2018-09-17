@@ -138,7 +138,7 @@ namespace Microsoft.IdentityModel.Tokens.Tests
                 rsaOaep = new RsaOaep();
                 theoryData.Add(new KeyWrapTestParams
                 {
-                    Algorithm = SecurityAlgorithms.RsaOaepKeyWrap,
+                    Algorithm = SecurityAlgorithms.RsaOaepMgf1pKeyWrap,
                     KeyVaultEncryptor = rsaOaep.CreateEncryptor(KeyingMaterial.RsaSecurityKeyWithCspProvider_2048_Public.Rsa),
                     KeyVaultDecryptor = rsaOaep.CreateDecryptor(KeyingMaterial.RsaSecurityKeyWithCspProvider_2048.Rsa),
                     Key = KeyingMaterial.RsaSecurityKeyWithCspProvider_2048,

@@ -414,7 +414,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens.Tests
                         ValidationParameters = Default.TokenValidationParameters(KeyingMaterial.RsaSecurityKey_2048, Default.SymmetricSigningKey256),
                         Payload = Default.PayloadString,
                         SigningCredentials = Default.SymmetricSigningCredentials,
-                        EncryptingCredentials = new EncryptingCredentials(KeyingMaterial.RsaSecurityKey_2048, SecurityAlgorithms.RsaOaepKeyWrap, SecurityAlgorithms.Aes128CbcHmacSha256)
+                        EncryptingCredentials = new EncryptingCredentials(KeyingMaterial.RsaSecurityKey_2048, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, SecurityAlgorithms.Aes128CbcHmacSha256)
                     },
                     new CreateTokenTheoryData()
                     {
@@ -422,7 +422,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens.Tests
                         ValidationParameters = Default.TokenValidationParameters(KeyingMaterial.RsaSecurityKey_2048, Default.SymmetricSigningKey256),
                         Payload = Default.PayloadString,
                         SigningCredentials = Default.SymmetricSigningCredentials,
-                        EncryptingCredentials = new EncryptingCredentials(KeyingMaterial.RsaSecurityKey_2048, SecurityAlgorithms.RsaOaepKeyWrap, SecurityAlgorithms.Aes192CbcHmacSha384)
+                        EncryptingCredentials = new EncryptingCredentials(KeyingMaterial.RsaSecurityKey_2048, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, SecurityAlgorithms.Aes192CbcHmacSha384)
                     },
                     new CreateTokenTheoryData()
                     {
@@ -430,7 +430,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens.Tests
                         ValidationParameters = Default.TokenValidationParameters(KeyingMaterial.RsaSecurityKey_2048, Default.SymmetricSigningKey256),
                         Payload = Default.PayloadString,
                         SigningCredentials = Default.SymmetricSigningCredentials,
-                        EncryptingCredentials = new EncryptingCredentials(KeyingMaterial.RsaSecurityKey_2048, SecurityAlgorithms.RsaOaepKeyWrap, SecurityAlgorithms.Aes256CbcHmacSha512)
+                        EncryptingCredentials = new EncryptingCredentials(KeyingMaterial.RsaSecurityKey_2048, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, SecurityAlgorithms.Aes256CbcHmacSha512)
                     },
                     new CreateTokenTheoryData()
                     {
@@ -454,7 +454,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens.Tests
                         ValidationParameters = Default.TokenValidationParameters(KeyingMaterial.RsaSecurityKey_2048, Default.SymmetricSigningKey256),
                         Payload = Default.PayloadString,
                         SigningCredentials = Default.SymmetricSigningCredentials,
-                        EncryptingCredentials = new EncryptingCredentials(KeyingMaterial.RsaSecurityKey_2048, SecurityAlgorithms.RsaOaepKeyWrap, SecurityAlgorithms.Aes192CbcHmacSha384)
+                        EncryptingCredentials = new EncryptingCredentials(KeyingMaterial.RsaSecurityKey_2048, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, SecurityAlgorithms.Aes192CbcHmacSha384)
                     }
                 };
             }

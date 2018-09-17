@@ -544,7 +544,8 @@ namespace Microsoft.IdentityModel.Tokens
 
             if (algorithm.Equals(SecurityAlgorithms.RsaPKCS1, StringComparison.Ordinal)
                 || algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)
-                || algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap, StringComparison.Ordinal))
+                || algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap, StringComparison.Ordinal)
+                || algorithm.Equals(SecurityAlgorithms.RsaOaepMgf1pKeyWrap, StringComparison.Ordinal))
             {
                 if (key is RsaSecurityKey)
                     return true;
@@ -582,6 +583,7 @@ namespace Microsoft.IdentityModel.Tokens
                 case SecurityAlgorithms.RsaOAEP:
                 case SecurityAlgorithms.RsaPKCS1:
                 case SecurityAlgorithms.RsaOaepKeyWrap:
+                case SecurityAlgorithms.RsaOaepMgf1pKeyWrap:
                     return true;
             }
 
