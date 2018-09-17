@@ -66,6 +66,7 @@ namespace Microsoft.IdentityModel.Tokens
 
         // See: https://www.w3.org/TR/xmldsig-core1/#sec-EnvelopedSignature
         public const string EnvelopedSignature = "http://www.w3.org/2000/09/xmldsig#enveloped-signature";
+        public const string Sha1Digest = "http://www.w3.org/2000/09/xmldsig#sha1";
 
         // See http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/#sec-SHA256
         // and https://tools.ietf.org/html/rfc6931#section-2.1.3

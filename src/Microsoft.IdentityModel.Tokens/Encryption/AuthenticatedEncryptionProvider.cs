@@ -37,6 +37,9 @@ namespace Microsoft.IdentityModel.Tokens
     /// </summary>
     public class AuthenticatedEncryptionProvider
     {
+        private const int AES_GCM_IV_SIZE = 12;
+        private const int AES_GCM_TAG_SIZE = 16;
+
         private struct AuthenticatedKeys
         {
             public SymmetricSecurityKey AesKey;
@@ -108,18 +111,6 @@ namespace Microsoft.IdentityModel.Tokens
         /// Encrypts the 'plaintext'
         /// </summary>
         /// <param name="plaintext">the data to be encrypted.</param>
-        /// <returns><see cref="AuthenticatedEncryptionResult"/>containing ciphertext, iv, authenticationtag.</returns>
-        /// <exception cref="ArgumentNullException">plaintext is null or empty.</exception>
-        /// <exception cref="SecurityTokenEncryptionFailedException">AES crypto operation threw. See inner exception for details.</exception>
-        public virtual AuthenticatedEncryptionResult Encrypt(byte[] plaintext)
-        {
-            return Encrypt(plaintext, null, null);
-        }
-
-        /// <summary>
-        /// Encrypts the 'plaintext'
-        /// </summary>
-        /// <param name="plaintext">the data to be encrypted.</param>
         /// <param name="authenticatedData">will be combined with iv and ciphertext to create an authenticationtag.</param>
         /// <returns><see cref="AuthenticatedEncryptionResult"/>containing ciphertext, iv, authenticationtag.</returns>
         /// <exception cref="ArgumentNullException">plaintext is null or empty.</exception>
@@ -148,8 +139,8 @@ namespace Microsoft.IdentityModel.Tokens
             if (IsAesGcmAlgorithm(Algorithm))
             {
                 byte[] ciphertext = new byte[plaintext.Length];
-                byte[] nonce = new byte[12];
-                byte[] tag = new byte[16];
+                byte[] nonce = new byte[AES_GCM_IV_SIZE];
+                byte[] tag = new byte[AES_GCM_TAG_SIZE];
 
                 using (var aesGcm = new AesGcm(GetKeyBytes(Key)))
                 {
@@ -215,6 +206,27 @@ namespace Microsoft.IdentityModel.Tokens
         {
             if (ciphertext == null || ciphertext.Length == 0)
                 throw LogHelper.LogArgumentNullException(nameof(ciphertext));
+
+            if (IsAesGcmAlgorithm(Algorithm))
+            {
+                int cipherSize = ciphertext.Length - AES_GCM_IV_SIZE - AES_GCM_TAG_SIZE;
+
+                byte[] cipher = new byte[cipherSize];
+                byte[] nonce = new byte[AES_GCM_IV_SIZE];
+                byte[] tag = new byte[AES_GCM_TAG_SIZE];
+
+                Array.Copy(ciphertext, 0, nonce, 0, AES_GCM_IV_SIZE);
+                Array.Copy(ciphertext, AES_GCM_IV_SIZE, cipher, 0, cipherSize);
+                Array.Copy(ciphertext, ciphertext.Length - AES_GCM_TAG_SIZE, tag, 0, AES_GCM_TAG_SIZE);
+
+                byte[] plaintext = new byte[cipher.Length];
+
+                using (var aesGcm = new AesGcm(GetKeyBytes(Key)))
+                {
+                    aesGcm.Decrypt(nonce, cipher, tag, plaintext);
+                    return plaintext;
+                }
+            }
 
             if (authenticatedData == null || authenticatedData.Length == 0)
                 throw LogHelper.LogArgumentNullException(nameof(authenticatedData));
@@ -442,6 +454,11 @@ namespace Microsoft.IdentityModel.Tokens
             RandomNumberGenerator rng = RandomNumberGenerator.Create();
             rng.GetBytes(tag);
 
+        }
+
+        public void Decrypt(byte[] nonce, byte[] ciphertext, byte[] tag, byte[] plaintext, byte[] associatedData = null)
+        {
+            Array.Copy(ciphertext, plaintext, ciphertext.Length);
         }
     }
 }

@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 
 using System.Xml;
+using static Microsoft.IdentityModel.Logging.LogHelper;
 
 namespace Microsoft.IdentityModel.Xml
 {
@@ -54,11 +55,15 @@ namespace Microsoft.IdentityModel.Xml
 
         internal override void WriteXml(XmlWriter writer)
         {
+            if (writer == null)
+                throw LogArgumentNullException(nameof(writer));
+
+            // nothing to write - return
+            if (string.IsNullOrEmpty(Uri))
+                return;
+
             writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.DataReference, null);
-
-            if (!string.IsNullOrEmpty(Uri))
-                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Uri, Uri);
-
+            writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Uri, Uri);
             writer.WriteEndElement();
         }
     }

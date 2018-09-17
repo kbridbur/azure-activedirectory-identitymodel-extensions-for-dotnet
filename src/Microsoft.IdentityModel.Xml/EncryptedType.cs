@@ -26,6 +26,8 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Xml;
+using static Microsoft.IdentityModel.Logging.LogHelper;
 
 namespace Microsoft.IdentityModel.Xml
 {
@@ -39,6 +41,7 @@ namespace Microsoft.IdentityModel.Xml
     {
         private CipherData _cipherData;
         private KeyInfo _keyInfo;
+        private EncryptionMethod _encryptionMethod;
 
         /// <summary>
         /// Gets or sets the <see cref="CipherData"/> value for an instance of an <see cref="EncryptedType"/> class.
@@ -93,6 +96,73 @@ namespace Microsoft.IdentityModel.Xml
         /// <summary>
         /// 
         /// </summary>
-        public virtual EncryptionMethod EncryptionMethod { get; set; }
+        public EncryptionMethod EncryptionMethod
+        {
+            get
+            {
+                if (_encryptionMethod == null)
+                    _encryptionMethod = new EncryptionMethod();
+                return _encryptionMethod;
+            }
+            set { _encryptionMethod = value; }
+        }
+
+        internal virtual void WriteXml(XmlWriter writer)
+        {
+            if (writer == null)
+                throw LogArgumentNullException(nameof(writer));
+
+            if (!string.IsNullOrEmpty(Id))
+                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Id, null, Id);
+
+            if (!string.IsNullOrEmpty(Type))
+                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Type, null, Type);
+
+            if (!string.IsNullOrEmpty(MimeType))
+                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.MimeType, null, MimeType);
+
+            if (!string.IsNullOrEmpty(Encoding))
+                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Encoding, null, Encoding);
+
+            EncryptionMethod.WriteXml(writer);
+            KeyInfo.WriteXml(writer);
+            CipherData.WriteXml(writer);
+        }
+
+        internal virtual void ReadXml(XmlDictionaryReader reader)
+        {
+            if (reader == null)
+                throw LogArgumentNullException(nameof(reader));
+
+            Id = reader.GetAttribute(XmlEncryptionConstants.Attributes.Id, null);
+            Type = reader.GetAttribute(XmlEncryptionConstants.Attributes.Type, null);
+            MimeType = reader.GetAttribute(XmlEncryptionConstants.Attributes.MimeType, null);
+            Encoding = reader.GetAttribute(XmlEncryptionConstants.Attributes.Encoding, null);
+
+            reader.ReadStartElement();
+
+            // <EncryptedMethod>? 0 - 1
+            if (reader.IsStartElement(XmlEncryptionConstants.Elements.EncryptionMethod, XmlEncryptionConstants.Namespace))
+            {
+                EncryptionMethod.ReadXml(reader);
+            }
+
+            // <KeyInfo>? 0 - 1
+            if (reader.IsStartElement(XmlSignatureConstants.Elements.KeyInfo, XmlSignatureConstants.Namespace))
+            { 
+                KeyInfo.ReadXml(reader);
+            }
+
+            // <CipherData> 1
+            CipherData.ReadXml(reader);
+
+            // <EncryptionProperties>? 0 - 1
+            // Skip - not supported
+            if (reader.IsStartElement(XmlEncryptionConstants.Elements.EncryptionProperties, XmlEncryptionConstants.Namespace))
+            {
+                LogInformation(LogMessages.IDX30301, XmlEncryptionConstants.Elements.EncryptionProperties);
+                reader.Skip();
+            }          
+        }
     }
 }

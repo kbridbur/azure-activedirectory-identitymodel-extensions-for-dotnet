@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 
 using System.Xml;
+using static Microsoft.IdentityModel.Logging.LogHelper;
 
 namespace Microsoft.IdentityModel.Xml
 {
@@ -35,31 +36,28 @@ namespace Microsoft.IdentityModel.Xml
     /// <remarks> http://www.w3.org/TR/xmlenc-core/#sec-EncryptedData </remarks>
     public sealed class EncryptedData : EncryptedType
     {
-        internal void WriteXml(XmlWriter writer)
+        internal override void WriteXml(XmlWriter writer)
         {
+            if (writer == null)
+                throw LogArgumentNullException(nameof(writer));
+
             writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.EncryptedData, XmlEncryptionConstants.Namespace);
-
-            if (!string.IsNullOrEmpty(Id))
-                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Id, null, Id);
-
-            if (!string.IsNullOrEmpty(Type))
-                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Type, null, Type);
-
-            if (!string.IsNullOrEmpty(MimeType))
-                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.MimeType, null, MimeType);
-
-            if (!string.IsNullOrEmpty(Encoding))
-                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Encoding, null, Encoding);
-
-            if (EncryptionMethod != null)
-                EncryptionMethod.WriteXml(writer);
-
-            if (KeyInfo != null)
-                KeyInfo.WriteXml(writer);
-
-            CipherData.WriteXml(writer); //required
-
+            base.WriteXml(writer);
             writer.WriteEndElement();
+        }
+
+        internal override void ReadXml(XmlDictionaryReader reader)
+        {
+            if (reader == null)
+                throw LogArgumentNullException(nameof(reader));
+
+            if (!reader.IsStartElement(XmlEncryptionConstants.Elements.EncryptedData, XmlEncryptionConstants.Namespace))
+                throw XmlUtil.LogReadException(LogMessages.IDX30011, XmlEncryptionConstants.Namespace, XmlEncryptionConstants.Elements.EncryptedData, reader.NamespaceURI, reader.LocalName);
+
+            base.ReadXml(reader);
+
+            // should be on EndElement for the EncryptedData
+            reader.ReadEndElement();
         }
     }
 }

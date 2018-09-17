@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 
 using System.Xml;
+using static Microsoft.IdentityModel.Logging.LogHelper;
 
 namespace Microsoft.IdentityModel.Xml
 {
@@ -34,9 +35,6 @@ namespace Microsoft.IdentityModel.Xml
     /// </summary>
     public class EncryptionMethod
     {
-        private int _keySize = 0;
-        private string _algorithm;
-
         /// <summary>
         /// 
         /// </summary>
@@ -50,7 +48,7 @@ namespace Microsoft.IdentityModel.Xml
         /// <param name="algorithm"></param>
         public EncryptionMethod(string algorithm)
         {
-            _algorithm = algorithm;
+            KeyAlgorithm = algorithm;
         }
 
         /// <summary>
@@ -58,13 +56,8 @@ namespace Microsoft.IdentityModel.Xml
         /// </summary>
         public int KeySize
         {
-            get { return _keySize; }
-            set
-            {
-                //if (value <= 0)
-                //throw new ArgumentOutOfRangeException(nameof(value), SR.Cryptography_Xml_InvalidKeySize);
-                _keySize = value;
-            }
+            get;
+            set;
         }
 
         /// <summary>
@@ -75,12 +68,63 @@ namespace Microsoft.IdentityModel.Xml
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="writer"></param>
+        public string DigestMethod { get; set; }
+
         internal void WriteXml(XmlWriter writer)
         {
+            if (writer == null)
+                throw LogArgumentNullException(nameof(writer));
+
+            // nothing to write - return
+            if (string.IsNullOrEmpty(KeyAlgorithm))
+                return;
+
             writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.EncryptionMethod, XmlEncryptionConstants.Namespace);
-            writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Algorithm, null, _algorithm);
+            writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Algorithm, null, KeyAlgorithm);
+
+            if (!string.IsNullOrEmpty(DigestMethod))
+            {
+                writer.WriteStartElement(XmlSignatureConstants.PreferredPrefix, XmlSignatureConstants.Elements.DigestMethod, XmlSignatureConstants.Namespace);
+                writer.WriteAttributeString(XmlSignatureConstants.Attributes.Algorithm, null, DigestMethod);
+                writer.WriteEndElement();
+            }
+
             writer.WriteEndElement();
+        }
+
+        internal void ReadXml(XmlDictionaryReader reader)
+        {
+            if (reader == null)
+                throw LogArgumentNullException(nameof(reader));
+
+            if (reader.IsStartElement(XmlEncryptionConstants.Elements.EncryptionMethod, XmlEncryptionConstants.Namespace))
+            {
+                KeyAlgorithm = reader.GetAttribute(XmlEncryptionConstants.Attributes.Algorithm, null);
+
+                if (reader.IsEmptyElement)
+                {
+                    reader.Read();
+                    return;
+                }
+
+                reader.ReadStartElement(XmlEncryptionConstants.Elements.EncryptionMethod, XmlEncryptionConstants.Namespace);
+
+                while (reader.IsStartElement())
+                {
+                    if (reader.IsStartElement(XmlSignatureConstants.Elements.DigestMethod, XmlSignatureConstants.Namespace))
+                    {
+                        DigestMethod = reader.GetAttribute(XmlSignatureConstants.Attributes.Algorithm, null);
+                        reader.Read();
+                    }
+                    else
+                    {
+                        LogInformation(LogMessages.IDX30302, reader.LocalName, XmlEncryptionConstants.Elements.EncryptionMethod);
+                        reader.Skip();
+                    }
+                }
+
+                reader.ReadEndElement();
+            }
         }
     }
 }

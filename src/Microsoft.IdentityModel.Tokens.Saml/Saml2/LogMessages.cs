@@ -79,7 +79,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13138 = "IDX13138: Unable to read for Saml2SecurityToken. the AttributeStatement does not contain any Attributes.";
         internal const string IDX13139 = "IDX13139: Uri must be an AbsoluteUri is: '{0}'";
         internal const string IDX13140 = "IDX13140: EncryptedId is not supported. You will need to override ReadEncryptedId and provide support.";
-        internal const string IDX13141 = "IDX13141: EncryptedAssertion is not supported. You will need to override ReadAssertion and provide support.";
         internal const string IDX13313 = "IDX13313: 'AuthnStatement' cannot be empty.";
         internal const string IDX13312 = "IDX13312: 'AuthnContext' cannot be empty.";
         internal const string IDX13314 = "IDX13314: 'AuthzDecisionStatement' cannot be empty (must have at least one 'Subject').";
@@ -106,6 +105,19 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13605 = "IDX13605: Exception thrown while writing EncryptedKey element. See inner exception.";
         internal const string IDX13606 = "IDX13606: EncryptionCredentials.Key is not SymmetricSecurityKey or AsymmetricSecurityKey. EncryptionCredentials.Key: '{0}'.";
         internal const string IDX13607 = "IDX13607: Session key encryption algorithm: '{0}' is not supported.";
+        internal const string IDX13608 = "IDX13608: Saml2Assertion is encrypted. Unable to get '{0}' from an EncryptedAssertion.";
+        internal const string IDX13609 = "IDX13609: Unable to check if an Assertion is an EncryptedAssertion. Assertion: '{0}'";
+        internal const string IDX13610 = "IDX13610: EncryptedAssertion validation failed. EncryptedData is null.";
+        internal const string IDX13611 = "IDX13611: EncryptedAssertion validation failed. EncryptionMethod is not present. As there is no support for users to provide an encryption algorithm - EncryptionMethod is treated as required for now.";
+        internal const string IDX13612 = "IDX13612: EncryptedAssertion validation failed. CypherValue is null.";
+        internal const string IDX13613 = "IDX13613: EncryptedAssertion validation failed. EncryptedData Type is not valid: '{0}'.";
+        internal const string IDX13614 = "IDX13614: EncryptedAssertion validation failed. EncryptedKey Type is not valid: '{0}'.";
+        internal const string IDX13615 = "IDX13615: EncryptedKey contain DataReference(s), but EncryptedData doesn't have an ID attribute set.";
+        internal const string IDX13616 = "IDX13616: EncryptedKey contains DataReference(s) where neither references the EncryptedData element.";
+        internal const string IDX13617 = "IDX13617: EncryptedData->KeyInfo contain RetrievalMethodUri, but EncryptedKey doesn't have an ID attribute set.";
+        internal const string IDX13618 = "IDX13618: EncryptedData->KeyInfo->RetrievalMethodUri is not equal to EncryptedKey->ID. Values found: RetrievalMethodUri: '{0}', EncryptedKey->ID: '{1}'.";
+        internal const string IDX13619 = "IDX13619: EncryptedKey->KeyInfo->X509Data is present but it doesn't contain X509Certificate child element.";
+        internal const string IDX13620 = "IDX13620: Unable to Read an EncryptedAssertion. Expecting XmlReader to be at element: '{0}', found: '{1}'.";
 
         // IDX11900 - AuthorizationDecisionStatement
         internal const string IDX13900 = "IDX13900: Unable to write Saml2Assertion: {0} is required, {1} is null or empty.";

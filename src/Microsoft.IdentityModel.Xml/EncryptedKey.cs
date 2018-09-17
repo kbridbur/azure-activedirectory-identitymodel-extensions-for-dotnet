@@ -27,6 +27,7 @@
 
 using System.Collections.Generic;
 using System.Xml;
+using static Microsoft.IdentityModel.Logging.LogHelper;
 
 namespace Microsoft.IdentityModel.Xml
 {
@@ -35,36 +36,7 @@ namespace Microsoft.IdentityModel.Xml
     /// </summary>
     public sealed class EncryptedKey : EncryptedType
     {
-        private string _recipient;
         private IList<EncryptedReference> _referenceList;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public EncryptedKey() { }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Recipient
-        {
-            get
-            {
-                // an unspecified value for an XmlAttribute is string.Empty
-                if (_recipient == null)
-                    _recipient = string.Empty;
-                return _recipient;
-            }
-            set
-            {
-                _recipient = value;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string CarriedKeyName { get; set; }
 
         /// <summary>
         /// 
@@ -97,21 +69,15 @@ namespace Microsoft.IdentityModel.Xml
             ReferenceList.Add(keyReference);
         }
 
-        internal void WriteXml(XmlWriter writer)
+        internal override void WriteXml(XmlWriter writer)
         {
             writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.EncryptedKey, XmlEncryptionConstants.Namespace);
 
-            if (!string.IsNullOrEmpty(Id))
-                writer.WriteAttributeString(XmlEncryptionConstants.Attributes.Id, null, Id);
-
-            if (EncryptionMethod != null)
-                EncryptionMethod.WriteXml(writer);
-
-            CipherData.WriteXml(writer); //required
+            base.WriteXml(writer);
 
             if (ReferenceList.Count != 0)
             {
-                writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.ReferenceList);
+                writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.ReferenceList, null);
 
                 foreach(var reference in ReferenceList)
                 {
@@ -122,6 +88,56 @@ namespace Microsoft.IdentityModel.Xml
             }
 
             writer.WriteEndElement();
+        }
+
+        internal override void ReadXml(XmlDictionaryReader reader)
+        {
+            if (reader == null)
+                throw LogArgumentNullException(nameof(reader));
+
+            if (reader.IsStartElement(XmlEncryptionConstants.Elements.EncryptedKey, XmlEncryptionConstants.Namespace))
+            {
+                // <EncryptedType> 1
+                base.ReadXml(reader);
+
+                // <ReferenceList>? 0 - 1
+                if (reader.IsStartElement(XmlEncryptionConstants.Elements.ReferenceList, XmlEncryptionConstants.Namespace))
+                {
+                    reader.ReadStartElement(XmlEncryptionConstants.Elements.ReferenceList, XmlEncryptionConstants.Namespace);
+
+                    while (reader.IsStartElement())
+                    {
+                        if (reader.IsStartElement(XmlEncryptionConstants.Elements.DataReference, XmlEncryptionConstants.Namespace))
+                        {
+                            var dataReferece = new DataReference();
+                            dataReferece.ReadXml(reader);
+                            ReferenceList.Add(dataReferece);
+                        }
+                        else if (reader.IsStartElement(XmlEncryptionConstants.Elements.KeyReference, XmlEncryptionConstants.Namespace))
+                        {
+                            var keyReferece = new KeyReference();
+                            keyReferece.ReadXml(reader);
+                            ReferenceList.Add(keyReferece);
+                        }
+                        else
+                        {
+                            LogInformation(LogMessages.IDX30303, reader.LocalName);
+                            reader.Skip();
+                        }
+                    }
+                }
+
+                // <CarriedKeyName>? 0 - 1
+                // Skip - not supported
+                if (reader.IsStartElement(XmlEncryptionConstants.Elements.CarriedKeyName, XmlEncryptionConstants.Namespace))
+                {
+                    LogInformation(LogMessages.IDX30302, XmlEncryptionConstants.Elements.CarriedKeyName, XmlEncryptionConstants.Elements.EncryptedKey);
+                    reader.Skip();
+                }
+
+                // should be on EndElement for the EncryptedKey
+                reader.ReadEndElement();
+            }
         }
     }
 }

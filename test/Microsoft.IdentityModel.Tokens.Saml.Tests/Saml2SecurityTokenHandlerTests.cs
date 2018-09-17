@@ -262,7 +262,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
 
             return context.Merge(localContext);
         }
-
+      
         [Theory, MemberData(nameof(ReadTokenTheoryData))]
         public void ReadToken(Saml2TheoryData theoryData)
         {
@@ -312,7 +312,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                 };
             }
         }
-
+        
         [Theory, MemberData(nameof(RoundTripTokenTheoryData))]
         public void RoundTripToken(Saml2TheoryData theoryData)
         {

@@ -298,7 +298,8 @@ namespace Microsoft.IdentityModel.Tokens
             // RSACryptoServiceProvider is wrapped to support SHA2
 #if NET45 || NET451 || NET461 || NETSTANDARD2_0
             _useRSAOeapPadding = algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)
-                              || algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap, StringComparison.Ordinal);
+                              || algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap, StringComparison.Ordinal)
+                              || algorithm.Equals(SecurityAlgorithms.RsaOaepMgf1pKeyWrap, StringComparison.Ordinal);
 
             if (rsa is RSACryptoServiceProvider rsaCryptoServiceProvider)
             {

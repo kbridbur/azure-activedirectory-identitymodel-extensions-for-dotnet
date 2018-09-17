@@ -27,6 +27,7 @@
 
 using System;
 using System.Xml;
+using static Microsoft.IdentityModel.Logging.LogHelper;
 
 namespace Microsoft.IdentityModel.Xml
 {
@@ -61,19 +62,16 @@ namespace Microsoft.IdentityModel.Xml
             {
                 if (value == null)
                     throw new ArgumentNullException(nameof(value));
-                // if (CipherReference != null)
-                //throw new CryptographicException(SR.Cryptography_Xml_CipherValueElementRequired);
 
                 _cipherValue = (byte[])value.Clone();
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="writer"></param>
-        public void WriteXml(XmlWriter writer)
+        internal void WriteXml(XmlWriter writer)
         {
+            if (writer == null)
+                throw LogArgumentNullException(nameof(writer));
+
             writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.CipherData, XmlEncryptionConstants.Namespace);
             writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.CipherValue, XmlEncryptionConstants.Namespace);
 
@@ -81,6 +79,26 @@ namespace Microsoft.IdentityModel.Xml
 
             writer.WriteEndElement(); // CipherValue
             writer.WriteEndElement(); // CipherData
+        }
+
+        internal void ReadXml(XmlDictionaryReader reader)
+        {
+            if (reader == null)
+                throw LogArgumentNullException(nameof(reader));
+
+            if (!reader.IsStartElement(XmlEncryptionConstants.Elements.CipherData, XmlEncryptionConstants.Namespace))
+                throw XmlUtil.LogReadException(LogMessages.IDX30011, XmlEncryptionConstants.Namespace, XmlEncryptionConstants.Elements.CipherData, reader.NamespaceURI, reader.LocalName);
+
+            reader.ReadStartElement(XmlEncryptionConstants.Elements.CipherData, XmlEncryptionConstants.Namespace);
+            reader.ReadStartElement(XmlEncryptionConstants.Elements.CipherValue, XmlEncryptionConstants.Namespace);
+
+            _cipherValue = reader.ReadContentAsBase64();
+
+            // <CipherValue>
+            reader.ReadEndElement();
+
+            // <CipherData>
+            reader.ReadEndElement();
         }
     }
 }
