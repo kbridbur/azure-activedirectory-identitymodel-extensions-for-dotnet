@@ -25,15 +25,16 @@
 //
 //------------------------------------------------------------------------------
 
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Xml;
 using System.Xml;
-using static Microsoft.IdentityModel.Logging.LogHelper;
 
-namespace Microsoft.IdentityModel.Xml
+namespace Microsoft.IdentityModel.Tokens.Saml2
 {
     /// <summary>
     /// 
     /// </summary>
-    public class EncryptedAssertion
+    public class Saml2EncryptedAssertion
     {
         /// <summary>
         /// 
@@ -48,24 +49,38 @@ namespace Microsoft.IdentityModel.Xml
         internal virtual void ReadXml(XmlDictionaryReader reader)
         {
             if (reader == null)
-                throw LogArgumentNullException(nameof(reader));
+                throw LogHelper.LogArgumentNullException(nameof(reader));
 
             EncryptedData = new EncryptedData();
-            EncryptedKey = new EncryptedKey();
-
             EncryptedData.ReadXml(reader);
-            EncryptedKey.ReadXml(reader);
+
+            if (isReaderPointingToEncryptedKey(reader))
+            {
+                EncryptedKey = new EncryptedKey();
+                EncryptedKey.ReadXml(reader);
+            }
         }
 
         internal virtual void WriteXml(XmlWriter writer)
         {
             if (writer == null)
-                throw LogArgumentNullException(nameof(writer));
+                throw LogHelper.LogArgumentNullException(nameof(writer));
 
             EncryptedData.WriteXml(writer);
 
             if (EncryptedKey != null)
                 EncryptedKey.WriteXml(writer);
+        }
+
+        private bool isReaderPointingToEncryptedKey(XmlDictionaryReader reader)
+        {
+            if (reader == null)
+                throw LogHelper.LogArgumentNullException(nameof(reader));
+
+            if (reader.IsStartElement(XmlEncryptionConstants.Elements.EncryptedKey, XmlEncryptionConstants.Namespace))
+                return true;
+
+            return false;
         }
     }
 }

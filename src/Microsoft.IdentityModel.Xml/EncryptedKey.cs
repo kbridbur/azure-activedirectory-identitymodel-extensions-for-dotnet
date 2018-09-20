@@ -79,7 +79,7 @@ namespace Microsoft.IdentityModel.Xml
             {
                 writer.WriteStartElement(XmlEncryptionConstants.Prefix, XmlEncryptionConstants.Elements.ReferenceList, null);
 
-                foreach(var reference in ReferenceList)
+                foreach (var reference in ReferenceList)
                 {
                     reference.WriteXml(writer);
                 }

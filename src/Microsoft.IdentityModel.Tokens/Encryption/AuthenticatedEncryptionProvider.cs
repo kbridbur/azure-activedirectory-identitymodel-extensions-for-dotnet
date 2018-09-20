@@ -147,7 +147,15 @@ namespace Microsoft.IdentityModel.Tokens
                     //random nonce
                     RandomNumberGenerator rng = RandomNumberGenerator.Create();
                     rng.GetBytes(nonce);
-                    aesGcm.Encrypt(nonce, plaintext, ciphertext, tag);
+                    
+                    try
+                    {
+                        aesGcm.Encrypt(nonce, plaintext, ciphertext, tag);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw LogHelper.LogExceptionMessage(new SecurityTokenDecryptionFailedException(LogHelper.FormatInvariant(LogMessages.IDX10618, Algorithm), ex));
+                    }
                 }
 
                 return new AuthenticatedEncryptionResult(Key, ciphertext, nonce, tag);
@@ -211,6 +219,9 @@ namespace Microsoft.IdentityModel.Tokens
             {
                 int cipherSize = ciphertext.Length - AES_GCM_IV_SIZE - AES_GCM_TAG_SIZE;
 
+                if (cipherSize < 1)
+                    throw LogHelper.LogExceptionMessage(new SecurityTokenDecryptionFailedException(LogHelper.FormatInvariant(LogMessages.IDX10620)));
+
                 byte[] cipher = new byte[cipherSize];
                 byte[] nonce = new byte[AES_GCM_IV_SIZE];
                 byte[] tag = new byte[AES_GCM_TAG_SIZE];
@@ -223,8 +234,15 @@ namespace Microsoft.IdentityModel.Tokens
 
                 using (var aesGcm = new AesGcm(GetKeyBytes(Key)))
                 {
-                    aesGcm.Decrypt(nonce, cipher, tag, plaintext);
-                    return plaintext;
+                    try
+                    {
+                        aesGcm.Decrypt(nonce, cipher, tag, plaintext);
+                        return plaintext;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw LogHelper.LogExceptionMessage(new SecurityTokenDecryptionFailedException(LogHelper.FormatInvariant(LogMessages.IDX10619, Algorithm), ex));
+                    }
                 }
             }
 

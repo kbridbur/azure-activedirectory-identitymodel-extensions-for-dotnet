@@ -332,7 +332,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
 
                     reader.ReadStartElement();
 
-                    var encryptedAssertion = new EncryptedAssertion();
+                    var encryptedAssertion = new Saml2EncryptedAssertion();
                     encryptedAssertion.ReadXml(reader);
 
                     return DecryptAssertionHelper(encryptedAssertion, validationParameters, assertion);
@@ -340,17 +340,46 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             }
         }
 
-        private string DecryptAssertionHelper(EncryptedAssertion encryptedAssertion, TokenValidationParameters validationParameters, string assertion)
+        private string DecryptAssertionHelper(Saml2EncryptedAssertion encryptedAssertion, TokenValidationParameters validationParameters, string assertion)
         {
+            if (validationParameters == null)
+                throw LogArgumentNullException(nameof(validationParameters));
+
             ValidateEncryptedAssertion(encryptedAssertion);
 
             string plaintextAssertion = string.Empty;
+            SecurityKey key = null;
 
+            // Support only for a single key for now
+            if (validationParameters.TokenDecryptionKeyResolver != null)
+                key = validationParameters.TokenDecryptionKeyResolver(assertion, null, encryptedAssertion.EncryptedData.KeyInfo.KeyName, validationParameters).FirstOrDefault();
+            else
+                key = validationParameters.TokenDecryptionKey;
+
+            var cryptoProviderFactory = validationParameters.CryptoProviderFactory ?? key.CryptoProviderFactory;
+            if (cryptoProviderFactory == null)
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionDecryptionException(LogMessages.IDX13621));
+
+            // There is no EncryptedKey -
+            // Relying Party must be able to locally determine the decryption key
+            if (encryptedAssertion.EncryptedKey == null)
+            {
+                if (!cryptoProviderFactory.IsSupportedAlgorithm(encryptedAssertion.EncryptedData.EncryptionMethod.KeyAlgorithm, key))
+                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionDecryptionException(LogMessages.IDX13621));
+
+                var decryptionProvider = cryptoProviderFactory.CreateAuthenticatedEncryptionProvider(key, encryptedAssertion.EncryptedData.EncryptionMethod.KeyAlgorithm);
+                var decryptedAssertionBytes = decryptionProvider.Decrypt(encryptedAssertion.EncryptedData.CipherData.CipherValue, null, null, null);
+                return Encoding.UTF8.GetString(decryptedAssertionBytes);
+            }
+            else // Session key is wrapped
+            {
+
+            }
 
             return plaintextAssertion;
         }
 
-        private void ValidateEncryptedAssertion(EncryptedAssertion encryptedAssertion)
+        private void ValidateEncryptedAssertion(Saml2EncryptedAssertion encryptedAssertion)
         {
             if (encryptedAssertion.EncryptedData == null)
                 throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionDecryptionException(LogMessages.IDX13610));
@@ -1743,10 +1772,10 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             writer.WriteEndElement();
         }
 
-        private EncryptedAssertion EncryptAssertion(XmlWriter writer, byte[] assertionData, Saml2Assertion assertion)
+        private Saml2EncryptedAssertion EncryptAssertion(XmlWriter writer, byte[] assertionData, Saml2Assertion assertion)
         {
             var encryptingCredentials = assertion.EncryptingCredentials;
-            var encryptedAssertion = new EncryptedAssertion();
+            var encryptedAssertion = new Saml2EncryptedAssertion();
 
             // SymmetricSecurityKey is provided:
             // Pre-shared symmetric key (session key) is used to encrypt an assertion
@@ -1787,7 +1816,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             return encryptedAssertion;
         }
 
-        private void WriteEncryptedAssertion(XmlWriter writer, EncryptedAssertion encryptedAssertion)
+        private void WriteEncryptedAssertion(XmlWriter writer, Saml2EncryptedAssertion encryptedAssertion)
         {
             if (writer == null)
                 throw LogArgumentNullException(nameof(writer));

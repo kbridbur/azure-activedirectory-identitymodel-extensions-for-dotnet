@@ -262,7 +262,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
 
             return context.Merge(localContext);
         }
-      
+
         [Theory, MemberData(nameof(ReadTokenTheoryData))]
         public void ReadToken(Saml2TheoryData theoryData)
         {
@@ -312,7 +312,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                 };
             }
         }
-        
+
         [Theory, MemberData(nameof(RoundTripTokenTheoryData))]
         public void RoundTripToken(Saml2TheoryData theoryData)
         {
@@ -998,6 +998,167 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                 };
             }
         }
+
+        #region EncryptedAssertion
+
+        [Theory, MemberData(nameof(WriteEncryptedTokenTheoryData))]
+        public void WriteEncryptedToken(Saml2TheoryData theoryData)
+        {
+            var context = TestUtilities.WriteHeader($"{this}.WriteEncryptedToken", theoryData);
+
+            try
+            {
+                var token = theoryData.Handler.WriteToken(theoryData.SecurityToken);
+            }
+            catch (Exception ex)
+            {
+                theoryData.ExpectedException.ProcessException(ex, context);
+            }
+
+            TestUtilities.AssertFailIfErrors(context);
+        }
+
+        public static TheoryData<Saml2TheoryData> WriteEncryptedTokenTheoryData
+        {
+            get
+            {
+                var key = KeyingMaterial.X509SecurityKeySelfSigned2048_SHA256;
+                var sessionKey = KeyingMaterial.DefaultSymmetricSecurityKey_128;
+
+                var tokenDescriptor_PreSharedSessionKey = new SecurityTokenDescriptor
+                {
+                    Audience = Default.Audience,
+                    NotBefore = Default.NotBefore,
+                    Expires = Default.Expires,
+                    Issuer = Default.Issuer,
+                    EncryptingCredentials = new EncryptingCredentials(sessionKey, SecurityAlgorithms.Aes128Gcm), //encrypt with 'pre-shared' session key
+                    SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest),
+                    Subject = new ClaimsIdentity(Default.SamlClaims)
+                };
+
+                var tokenDescriptor_KeyWrap = new SecurityTokenDescriptor
+                {
+                    Audience = Default.Audience,
+                    NotBefore = Default.NotBefore,
+                    Expires = Default.Expires,
+                    Issuer = Default.Issuer,
+                    EncryptingCredentials = new X509EncryptingCredentials(KeyingMaterial.CertSelfSigned2048_SHA256_Public), //encrypt with 'one-time-use' session key and wrap a session key using public cert
+                    SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest),
+                    Subject = new ClaimsIdentity(Default.SamlClaims)
+                };
+
+                var tokenHandler = new Saml2SecurityTokenHandler();
+                var theoryData = new TheoryData<Saml2TheoryData>();
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    First = true,
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_PreSharedSessionKey) as Saml2SecurityToken,
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    TestId = "EncryptedAssertion_PreSharedSessionKey",
+                });
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap) as Saml2SecurityToken,
+                    ExpectedException = new ExpectedException(typeof(ArgumentNullException)),
+                    TestId = "EncryptedAssertion_KeyWrap",
+                });
+
+                return theoryData;
+            }
+        }
+
+        [Theory, MemberData(nameof(RoundTripEncryptedTokenTheoryData))]
+        public void RoundTripEncryptedToken(Saml2TheoryData theoryData)
+        {
+            var context = TestUtilities.WriteHeader($"{this}.WriteEncryptedToken", theoryData);
+            context.PropertiesToIgnoreWhenComparing = new Dictionary<Type, List<string>>
+            {
+                { typeof(Saml2Assertion), new List<string> { "IssueInstant", "Signature", "SigningCredentials", "EncryptingCredentials" } },
+                { typeof(Saml2SecurityToken), new List<string> { "SigningKey" } },
+            };
+
+            try
+            {
+                var token = theoryData.Handler.WriteToken(theoryData.SecurityToken);
+                theoryData.Handler.ValidateToken(token, theoryData.ValidationParameters, out SecurityToken validatedToken);
+                IdentityComparer.AreEqual(validatedToken, theoryData.SecurityToken, context);
+                theoryData.ExpectedException.ProcessNoException(context);
+            }
+            catch (Exception ex)
+            {
+                theoryData.ExpectedException.ProcessException(ex, context);
+            }
+
+            TestUtilities.AssertFailIfErrors(context);
+        }
+
+        public static TheoryData<Saml2TheoryData> RoundTripEncryptedTokenTheoryData
+        {
+            get
+            {
+                var key = KeyingMaterial.X509SecurityKeySelfSigned2048_SHA256;
+                var sessionKey = KeyingMaterial.DefaultSymmetricSecurityKey_128;
+
+                var tokenDescriptor_PreSharedSessionKey = new SecurityTokenDescriptor
+                {
+                    Audience = Default.Audience,
+                    NotBefore = Default.NotBefore,
+                    Expires = Default.Expires,
+                    Issuer = Default.Issuer,
+                    EncryptingCredentials = new EncryptingCredentials(sessionKey, SecurityAlgorithms.Aes128Gcm), //encrypt with 'pre-shared' session key
+                    SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest),
+                    Subject = new ClaimsIdentity(Default.SamlClaims),
+                };
+
+                var tokenDescriptor_KeyWrap = new SecurityTokenDescriptor
+                {
+                    Audience = Default.Audience,
+                    NotBefore = Default.NotBefore,
+                    Expires = Default.Expires,
+                    Issuer = Default.Issuer,
+                    EncryptingCredentials = new X509EncryptingCredentials(KeyingMaterial.CertSelfSigned2048_SHA256_Public), //encrypt with 'one-time-use' session key and wrap a session key using public cert
+                    SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest),
+                    Subject = new ClaimsIdentity(Default.SamlClaims)
+                };
+
+                var tokenHandler = new Saml2SecurityTokenHandler();
+                var theoryData = new TheoryData<Saml2TheoryData>();
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    First = true,
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_PreSharedSessionKey) as Saml2SecurityToken,
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    TestId = "EncryptedAssertion_PreSharedSessionKey",
+
+                    ValidationParameters = new TokenValidationParameters
+                    {
+                        IssuerSigningKey = key,
+                        TokenDecryptionKey = sessionKey,
+                        ValidAudience = Default.Audience,
+                        ValidIssuer = Default.Issuer,
+                        ValidateLifetime = false,
+                        ValidateTokenReplay = false,
+                        ValidateActor = false,
+                    }
+
+                });
+
+                /*theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap) as Saml2SecurityToken,
+                    ExpectedException = new ExpectedException(typeof(ArgumentNullException)),
+                    TestId = "EncryptedAssertion_KeyWrap",
+                });*/
+
+                return theoryData;
+            }
+        }
+
+
+        #endregion
     }
 
     public class Saml2SecurityTokenHandlerPublic : Saml2SecurityTokenHandler

@@ -118,6 +118,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13618 = "IDX13618: EncryptedData->KeyInfo->RetrievalMethodUri is not equal to EncryptedKey->ID. Values found: RetrievalMethodUri: '{0}', EncryptedKey->ID: '{1}'.";
         internal const string IDX13619 = "IDX13619: EncryptedKey->KeyInfo->X509Data is present but it doesn't contain X509Certificate child element.";
         internal const string IDX13620 = "IDX13620: Unable to Read an EncryptedAssertion. Expecting XmlReader to be at element: '{0}', found: '{1}'.";
+        internal const string IDX13621 = "IDX13621: Unable to obtain a CryptoProviderFactory, key.CryptoProviderFactory and ValidationParameters.CrypoProviderFactory are both null.";
 
         // IDX11900 - AuthorizationDecisionStatement
         internal const string IDX13900 = "IDX13900: Unable to write Saml2Assertion: {0} is required, {1} is null or empty.";
