@@ -265,7 +265,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         public bool Encrypted { get; internal set; } = false;
 
         /// <summary>
-        /// String representation of this (encrypted) assertion
+        /// String representation of this EncryptedAssertion
         /// </summary>
         public string EncryptedAssertion { get; internal set; }
     }

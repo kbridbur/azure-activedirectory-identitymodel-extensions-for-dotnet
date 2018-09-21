@@ -200,7 +200,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (token.Length > MaximumTokenSizeInBytes)
                 throw LogExceptionMessage(new ArgumentException(FormatInvariant(TokenLogMessages.IDX10209, token.Length, MaximumTokenSizeInBytes)));
 
-            // if an assertion is encrypted - decrypt it
+            // if an assertion is encrypted - decrypt it first
             if (IsSaml2EncryptedAssertion(token))
             {
                 token = DecryptAssertion(token, validationParameters);
@@ -415,7 +415,8 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (validationParameters == null)
                 throw LogArgumentNullException(nameof(validationParameters));
 
-            return Serializer.DecryptAssertion(assertion, validationParameters);
+            var encryptedAssertion = Serializer.ReadEncryptedAssertion(assertion);
+            return Serializer.DecryptAssertion(encryptedAssertion, validationParameters, assertion);
         }
 
         /// <summary>

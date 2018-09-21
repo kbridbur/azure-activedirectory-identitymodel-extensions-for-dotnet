@@ -1107,7 +1107,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                     NotBefore = Default.NotBefore,
                     Expires = Default.Expires,
                     Issuer = Default.Issuer,
-                    EncryptingCredentials = new EncryptingCredentials(sessionKey, SecurityAlgorithms.Aes128Gcm), //encrypt with 'pre-shared' session key
+                    EncryptingCredentials = new EncryptingCredentials(sessionKey, SecurityAlgorithms.Aes128Gcm), // encrypt with 'pre-shared' session key
                     SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest),
                     Subject = new ClaimsIdentity(Default.SamlClaims),
                 };
@@ -1118,7 +1118,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                     NotBefore = Default.NotBefore,
                     Expires = Default.Expires,
                     Issuer = Default.Issuer,
-                    EncryptingCredentials = new X509EncryptingCredentials(KeyingMaterial.CertSelfSigned2048_SHA256_Public), //encrypt with 'one-time-use' session key and wrap a session key using public cert
+                    EncryptingCredentials =  new X509EncryptingCredentials(KeyingMaterial.DefaultCert_2048), // encrypt with 'one-time-use' session key and wrap a session key using public cert
                     SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest),
                     Subject = new ClaimsIdentity(Default.SamlClaims)
                 };
@@ -1143,20 +1143,29 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                         ValidateTokenReplay = false,
                         ValidateActor = false,
                     }
-
                 });
 
-                /*theoryData.Add(new Saml2TheoryData
+                theoryData.Add(new Saml2TheoryData
                 {
                     SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap) as Saml2SecurityToken,
-                    ExpectedException = new ExpectedException(typeof(ArgumentNullException)),
+                    ExpectedException = ExpectedException.NoExceptionExpected,
                     TestId = "EncryptedAssertion_KeyWrap",
-                });*/
+
+                    ValidationParameters = new TokenValidationParameters
+                    {
+                        IssuerSigningKey = key,
+                        TokenDecryptionKey = KeyingMaterial.DefaultX509Key_2048_With_KeyId,
+                        ValidAudience = Default.Audience,
+                        ValidIssuer = Default.Issuer,
+                        ValidateLifetime = false,
+                        ValidateTokenReplay = false,
+                        ValidateActor = false,
+                    }
+                });
 
                 return theoryData;
             }
         }
-
 
         #endregion
     }
