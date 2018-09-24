@@ -116,11 +116,15 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13616 = "IDX13616: EncryptedKey contains DataReference(s) where neither references the EncryptedData element.";
         internal const string IDX13617 = "IDX13617: EncryptedData->KeyInfo contain RetrievalMethodUri, but EncryptedKey doesn't have an ID attribute set.";
         internal const string IDX13618 = "IDX13618: EncryptedData->KeyInfo->RetrievalMethodUri is not equal to EncryptedKey->ID. Values found: RetrievalMethodUri: '{0}', EncryptedKey->ID: '{1}'.";
-        internal const string IDX13619 = "IDX13619: EncryptedKey->KeyInfo->X509Data is present but it doesn't contain any X509Certificate elements.";
         internal const string IDX13620 = "IDX13620: Unable to Read a Saml2EncryptedAssertion. Expecting XmlReader to be at element: '{0}', found: '{1}'.";
         internal const string IDX13621 = "IDX13621: Unable to obtain a CryptoProviderFactory, key.CryptoProviderFactory and ValidationParameters.CrypoProviderFactory are both null.";
         internal const string IDX13622 = "IDX13622: Saml2EncryptedAssertion decryption failed. There is no security key for decryption.";
         internal const string IDX13623 = "IDX13623: Saml2EncryptedAssertion decryption failed. No support for algorithm: '{0}', SecurityKey: '{1}'.";
+        internal const string IDX13624 = "IDX13624: EncryptingCredentials is null. Unable to encrypt an assertion.";
+        internal const string IDX13625 = "IDX13625: Encryption failed. Saml2 data encryption is only supported for: '{0}', '{1}' and '{2}'. The content encryption specified is: '{3}'.";
+        internal const string IDX13626 = "IDX13626: Encryption failed. Saml2 encryption algorithm should be set to '{0}' when pre-shared session key is used to encrypt data. The data encryption specified is: '{1}'.";
+        internal const string IDX13627 = "IDX13627: Encryption failed. Saml2 key wrap is only supported for: '{0}', and '{1}'. The key wrap algorithm specified is: '{2}'.";
+        internal const string IDX13628 = "IDX13628: Encryption failed. Key is either null or it's not Symmetric/Asymmetric SecurityKey.";
 
         // IDX11900 - AuthorizationDecisionStatement
         internal const string IDX13900 = "IDX13900: Unable to write Saml2Assertion: {0} is required, {1} is null or empty.";

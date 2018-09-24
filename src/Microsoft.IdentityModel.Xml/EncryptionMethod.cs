@@ -36,14 +36,14 @@ namespace Microsoft.IdentityModel.Xml
     public class EncryptionMethod
     {
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="EncryptionMethod"/> class.
         /// </summary>
         public EncryptionMethod()
         {
         }
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="EncryptionMethod"/> class specifying an algorithm Uniform Resource Identifier(URI).
         /// </summary>
         /// <param name="algorithm"></param>
         public EncryptionMethod(string algorithm)
@@ -52,21 +52,12 @@ namespace Microsoft.IdentityModel.Xml
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public int KeySize
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// 
+        /// Gets or sets a Uniform Resource Identifier (URI) that describes the algorithm to use for XML encryption.
         /// </summary>
         public string KeyAlgorithm { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the digest method Uniform Resource Identifier (URI) of the current Reference.
         /// </summary>
         public string DigestMethod { get; set; }
 

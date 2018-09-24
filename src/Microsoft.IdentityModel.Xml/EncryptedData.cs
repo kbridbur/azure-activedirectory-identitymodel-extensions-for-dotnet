@@ -36,6 +36,14 @@ namespace Microsoft.IdentityModel.Xml
     /// <remarks> http://www.w3.org/TR/xmlenc-core/#sec-EncryptedData </remarks>
     public sealed class EncryptedData : EncryptedType
     {
+        /// <summary>
+        /// Initializes an instance of <see cref="EncryptedData"/>.
+        /// </summary>
+        public EncryptedData()
+        {
+            Type = XmlEncryptionConstants.EncryptedDataTypes.Element;
+        }
+
         internal override void WriteXml(XmlWriter writer)
         {
             if (writer == null)
@@ -56,7 +64,6 @@ namespace Microsoft.IdentityModel.Xml
 
             base.ReadXml(reader);
 
-            // should be on EndElement for the EncryptedData
             reader.ReadEndElement();
         }
     }

@@ -32,17 +32,17 @@ using System.Xml;
 namespace Microsoft.IdentityModel.Tokens.Saml2
 {
     /// <summary>
-    /// 
+    /// Represents the <see cref="Saml2EncryptedAssertion"/> element.
     /// </summary>
     public class Saml2EncryptedAssertion
     {
         /// <summary>
-        /// 
+        /// Represents the <see cref="EncryptedData"/> element in XML encryption.
         /// </summary>
         public EncryptedData EncryptedData { get; set; }
 
         /// <summary>
-        /// 
+        /// Represents the <see cref="EncryptedKey"/> element in XML encryption.
         /// </summary>
         public EncryptedKey EncryptedKey { get; set; }
 
@@ -54,7 +54,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             EncryptedData = new EncryptedData();
             EncryptedData.ReadXml(reader);
 
-            if (isReaderPointingToEncryptedKey(reader))
+            if (IsReaderPointingToEncryptedKey(reader))
             {
                 EncryptedKey = new EncryptedKey();
                 EncryptedKey.ReadXml(reader);
@@ -72,7 +72,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 EncryptedKey.WriteXml(writer);
         }
 
-        private bool isReaderPointingToEncryptedKey(XmlDictionaryReader reader)
+        private bool IsReaderPointingToEncryptedKey(XmlDictionaryReader reader)
         {
             if (reader == null)
                 throw LogHelper.LogArgumentNullException(nameof(reader));

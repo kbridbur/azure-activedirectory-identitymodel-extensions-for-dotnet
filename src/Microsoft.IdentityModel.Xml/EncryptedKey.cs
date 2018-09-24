@@ -32,14 +32,23 @@ using static Microsoft.IdentityModel.Logging.LogHelper;
 namespace Microsoft.IdentityModel.Xml
 {
     /// <summary>
-    /// 
+    /// Represents the <see cref="EncryptedKey"/> element in XML encryption. This class cannot be inherited.
     /// </summary>
+    /// <remarks> http://www.w3.org/TR/xmlenc-core/#sec-EncryptedKey </remarks>
     public sealed class EncryptedKey : EncryptedType
     {
         private IList<EncryptedReference> _referenceList;
 
         /// <summary>
-        /// 
+        /// Initializes an instance of <see cref="EncryptedKey"/>.
+        /// </summary>
+        public EncryptedKey()
+        {
+            Type = XmlEncryptionConstants.EncryptedDataTypes.EncryptedKey;
+        }
+
+        /// <summary>
+        /// Gets the ReferenceList of <see cref="EncryptedReference"/> elements.
         /// </summary>
         public IList<EncryptedReference> ReferenceList
         {
@@ -52,7 +61,7 @@ namespace Microsoft.IdentityModel.Xml
         }
 
         /// <summary>
-        /// 
+        /// Adds new <see cref="DataReference"/> to the ReferenceList of <see cref="EncryptedReference"/> elements.
         /// </summary>
         /// <param name="dataReference"></param>
         public void AddReference(DataReference dataReference)
@@ -61,7 +70,7 @@ namespace Microsoft.IdentityModel.Xml
         }
 
         /// <summary>
-        /// 
+        /// Adds new <see cref="KeyReference"/> to the ReferenceList of <see cref="EncryptedReference"/> elements
         /// </summary>
         /// <param name="keyReference"></param>
         public void AddReference(KeyReference keyReference)

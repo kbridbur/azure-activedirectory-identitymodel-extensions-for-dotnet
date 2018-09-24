@@ -32,28 +32,24 @@ using static Microsoft.IdentityModel.Logging.LogHelper;
 namespace Microsoft.IdentityModel.Xml
 {
     /// <summary>
-    /// 
+    /// Represents the <see cref="CipherData"/> element in XML encryption. This class cannot be inherited.
     /// </summary>
+    /// <remarks> http://www.w3.org/TR/xmlenc-core/#sec-CipherData </remarks>
     public sealed class CipherData
     {
         private byte[] _cipherValue = null;
 
         /// <summary>
-        /// 
-        /// </summary>
-        public CipherData() { }
-
-        /// <summary>
-        /// 
+        /// Initializes an instance of <see cref="CipherData"/>.
         /// </summary>
         /// <param name="cipherValue"></param>
         public CipherData(byte[] cipherValue)
         {
-            CipherValue = cipherValue;
+            _cipherValue = cipherValue;
         }
 
         /// <summary>
-        /// 
+        /// Gets or sets the <see cref="CipherValue"/> element.
         /// </summary>
         public byte[] CipherValue
         {
@@ -90,6 +86,10 @@ namespace Microsoft.IdentityModel.Xml
                 throw XmlUtil.LogReadException(LogMessages.IDX30011, XmlEncryptionConstants.Namespace, XmlEncryptionConstants.Elements.CipherData, reader.NamespaceURI, reader.LocalName);
 
             reader.ReadStartElement(XmlEncryptionConstants.Elements.CipherData, XmlEncryptionConstants.Namespace);
+
+            if (!reader.IsStartElement(XmlEncryptionConstants.Elements.CipherValue, XmlEncryptionConstants.Namespace))
+                throw XmlUtil.LogReadException(LogMessages.IDX30011, XmlEncryptionConstants.Namespace, XmlEncryptionConstants.Elements.CipherValue, reader.NamespaceURI, reader.LocalName);
+
             reader.ReadStartElement(XmlEncryptionConstants.Elements.CipherValue, XmlEncryptionConstants.Namespace);
 
             _cipherValue = reader.ReadContentAsBase64();

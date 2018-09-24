@@ -341,6 +341,10 @@ namespace Microsoft.IdentityModel.Xml
 
                         reader.Skip();
                     }
+                    else if (reader.IsStartElement(XmlEncryptionConstants.Elements.EncryptedKey, XmlEncryptionConstants.Namespace))
+                    {
+                        throw XmlUtil.LogReadException(LogMessages.IDX30029);
+                    }
                     else if (reader.IsStartElement()) // skipped an unknown element (no support for now)
                     {
                         LogInformation(LogMessages.IDX30302, reader.LocalName, XmlSignatureConstants.Elements.KeyInfo);
@@ -351,7 +355,6 @@ namespace Microsoft.IdentityModel.Xml
                 reader.ReadEndElement();
             }
         }
-
 
         private bool AnythingToWrite()
         {

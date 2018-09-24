@@ -51,7 +51,7 @@ namespace Microsoft.IdentityModel.Xml
             get
             {
                 if (_cipherData == null)
-                    _cipherData = new CipherData();
+                    _cipherData = new CipherData(null);
 
                 return _cipherData;
             }
@@ -62,25 +62,33 @@ namespace Microsoft.IdentityModel.Xml
         }
 
         /// <summary>
-        /// 
+        /// Gets or sets the <see cref="Id"/> attribute of an <see cref="EncryptedType"/> instance in XML encryption.
         /// </summary>
         public virtual string Id { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the <see cref="Type"/> attribute of an <see cref="EncryptedType"/> instance in XML encryption.
         /// </summary>
         public virtual string Type { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public virtual string MimeType { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public virtual string Encoding { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the <see cref="MimeType"/> attribute of an <see cref="EncryptedType"/> instance in XML encryption.
+        /// </summary>
+        /// <remarks>
+        /// MimeType attribute is ignored while reading and writing an EncryptedAssertion
+        /// </remarks>
+        public virtual string MimeType { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="Encoding"/> attribute of an <see cref="EncryptedType"/> instance in XML encryption.
+        /// </summary>
+        /// <remarks>
+        /// Encoding attribute is set to <see cref="XmlSignatureConstants.Base64Encoding"/>
+        /// </remarks>
+        public virtual string Encoding { get => XmlSignatureConstants.Base64Encoding; }
+
+        /// <summary>
+        /// Gets of sets the <see cref="KeyInfo"/> element in XML encryption.
         /// </summary>
         public KeyInfo KeyInfo
         {
@@ -94,7 +102,7 @@ namespace Microsoft.IdentityModel.Xml
         }
 
         /// <summary>
-        /// 
+        /// Encapsulates the encryption algorithm used for XML encryption.
         /// </summary>
         public EncryptionMethod EncryptionMethod
         {
@@ -137,7 +145,6 @@ namespace Microsoft.IdentityModel.Xml
             Id = reader.GetAttribute(XmlEncryptionConstants.Attributes.Id, null);
             Type = reader.GetAttribute(XmlEncryptionConstants.Attributes.Type, null);
             MimeType = reader.GetAttribute(XmlEncryptionConstants.Attributes.MimeType, null);
-            Encoding = reader.GetAttribute(XmlEncryptionConstants.Attributes.Encoding, null);
 
             reader.ReadStartElement();
 

@@ -154,7 +154,7 @@ namespace Microsoft.IdentityModel.Tokens
                     }
                     catch (Exception ex)
                     {
-                        throw LogHelper.LogExceptionMessage(new SecurityTokenDecryptionFailedException(LogHelper.FormatInvariant(LogMessages.IDX10618, Algorithm), ex));
+                        throw LogHelper.LogExceptionMessage(new SecurityTokenEncryptionFailedException(LogHelper.FormatInvariant(LogMessages.IDX10618, Algorithm), ex));
                     }
                 }
 

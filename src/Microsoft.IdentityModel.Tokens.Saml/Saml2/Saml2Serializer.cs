@@ -90,6 +90,8 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
 
         private Saml2EncryptedAssertion EncryptAssertion(byte[] assertionData, EncryptingCredentials encryptingCredentials)
         {
+            ValidateEncryptingCredentials(encryptingCredentials);
+
             var encryptedAssertion = new Saml2EncryptedAssertion();
 
             // SymmetricSecurityKey is provided:
@@ -183,6 +185,40 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             }
         }
 
+        private void ValidateEncryptingCredentials(EncryptingCredentials encryptingCredentials)
+        {
+            if (encryptingCredentials == null)
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13624));
+
+            // Only AES-GCM is supported as a data encryption algorithm
+            if (!(SecurityAlgorithms.Aes128Gcm.Equals(encryptingCredentials.Enc, StringComparison.Ordinal)
+                || (SecurityAlgorithms.Aes192Gcm.Equals(encryptingCredentials.Enc, StringComparison.Ordinal))
+                || (SecurityAlgorithms.Aes256Gcm.Equals(encryptingCredentials.Enc, StringComparison.Ordinal))))
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13625, SecurityAlgorithms.Aes128Gcm, SecurityAlgorithms.Aes192Gcm, SecurityAlgorithms.Aes256Gcm, encryptingCredentials.Enc)));
+            }
+
+            if (encryptingCredentials.Key is SymmetricSecurityKey)
+            {
+                // If SymmetricSecurityKey is used (pre-shared session key) - Algorithm should be set to None
+                if (!encryptingCredentials.Alg.Equals(SecurityAlgorithms.None, StringComparison.Ordinal))
+                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13626, SecurityAlgorithms.None, encryptingCredentials.Alg)));
+
+            }
+            else if (encryptingCredentials.Key is AsymmetricSecurityKey)
+            {
+                if (!(SecurityAlgorithms.RsaOaepMgf1pKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal)
+                || (SecurityAlgorithms.RsaOaepKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal))))
+                {
+                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13627, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, encryptingCredentials.Alg)));
+                }
+            }
+            else
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13628));
+            }
+        }
+
         private void ValidateEncryptedAssertion(Saml2EncryptedAssertion encryptedAssertion)
         {
             if (encryptedAssertion.EncryptedData == null)
@@ -242,18 +278,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                     // RetrievalMethodUri element should reference the EncryptedKey
                     if (!encryptedAssertion.EncryptedData.KeyInfo.RetrievalMethodUri.Equals(encryptedAssertion.EncryptedKey.Id, StringComparison.Ordinal))
                         throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionDecryptionException(FormatInvariant(LogMessages.IDX13618, encryptedAssertion.EncryptedData.KeyInfo.RetrievalMethodUri, encryptedAssertion.EncryptedKey.Id)));
-                }
-
-                // If KeyInfo.X509Data element is present then X509Certificate should be also present
-                if (encryptedAssertion.EncryptedKey.KeyInfo.X509Data.Count != 0)
-                {
-                    // use only the first element from the collection
-                    var enumerator = encryptedAssertion.EncryptedKey.KeyInfo.X509Data.GetEnumerator();
-                    enumerator.MoveNext();
-                    var _x509Data = enumerator.Current;
-
-                    if (_x509Data.Certificates.Count == 0)
-                        throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionDecryptionException(LogMessages.IDX13619));
                 }
             }
         }
@@ -362,7 +386,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         }
 
         /// <summary>
-        /// Reads a &lt;saml:Assertion> element.
+        /// Reads a &lt;saml:Assertion> or &lt;saml:EncryptedAssertion> element.
         /// </summary>
         /// <param name="reader">A <see cref="XmlReader"/> positioned at a <see cref="Saml2Assertion"/> element.</param>
         /// <exception cref="ArgumentNullException">if <paramref name="reader"/> is null.</exception>
@@ -371,7 +395,12 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// <exception cref="Saml2SecurityTokenReadException">If 'Id' is missing.</exception>>
         /// <exception cref="Saml2SecurityTokenReadException">If 'IssueInstant' is missing.</exception>>
         /// <exception cref="Saml2SecurityTokenReadException">If no statements are found.</exception>>
+        /// <exception cref="Saml2SecurityTokenEncryptedAssertionDecryptionException">if assertion is an EncryptedAssertion and decrypt operation failed.</exception>
         /// <returns>A <see cref="Saml2Assertion"/> instance.</returns>
+        /// <remarks>
+        /// If Assertion element is an EncryptedAssertion, Encrypted property of resulting Saml2Assertion object will be set to True
+        /// and EncryptedAssertion property will be set to raw assertion data string
+        /// </remarks>
         public virtual Saml2Assertion ReadAssertion(XmlReader reader)
         {
             if (reader == null)
@@ -1723,7 +1752,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         }
 
         /// <summary>
-        /// Writes the &lt;Assertion> element.
+        /// Writes the &lt;Assertion> or &lt;EncryptedAssertion> element.
         /// </summary>
         /// <param name="writer">A <see cref="XmlWriter"/> to serialize the <see cref="Saml2Assertion"/>.</param>
         /// <param name="assertion">The <see cref="Saml2Assertion"/> to serialize.</param>
@@ -1732,6 +1761,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// <exception cref="NotSupportedException">if <paramref name="assertion"/>.EncryptingCredentials != null.</exception>
         /// <exception cref="InvalidOperationException">The <paramref name="assertion"/> must have a <see cref="Saml2Subject"/> if no <see cref="Saml2Statement"/> are present.</exception>
         /// <exception cref="InvalidOperationException">The SAML2 authentication, attribute, and authorization decision <see cref="Saml2Statement"/> require a <see cref="Saml2Subject"/>.</exception>
+        /// <exception cref="Saml2SecurityTokenEncryptedAssertionEncryptionException">if assertion is an EncryptedAssertion and encrypt operation failed.</exception>
         public virtual void WriteAssertion(XmlWriter writer, Saml2Assertion assertion)
         {
             if (writer == null)
