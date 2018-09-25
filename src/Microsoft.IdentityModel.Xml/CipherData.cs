@@ -42,10 +42,16 @@ namespace Microsoft.IdentityModel.Xml
         /// <summary>
         /// Initializes an instance of <see cref="CipherData"/>.
         /// </summary>
+        public CipherData()
+        { }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="CipherData"/>.
+        /// </summary>
         /// <param name="cipherValue"></param>
         public CipherData(byte[] cipherValue)
         {
-            _cipherValue = cipherValue;
+            CipherValue = cipherValue;
         }
 
         /// <summary>

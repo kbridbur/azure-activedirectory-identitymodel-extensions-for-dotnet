@@ -51,7 +51,7 @@ namespace Microsoft.IdentityModel.Xml
             get
             {
                 if (_cipherData == null)
-                    _cipherData = new CipherData(null);
+                    _cipherData = new CipherData();
 
                 return _cipherData;
             }

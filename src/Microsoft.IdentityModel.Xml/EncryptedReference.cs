@@ -39,7 +39,7 @@ namespace Microsoft.IdentityModel.Xml
         /// <summary>
         /// Initializes a new instance of the <see cref="EncryptedReference"/> class.
         /// </summary>
-        protected EncryptedReference() : this(string.Empty)
+        protected EncryptedReference()
         {
         }
 
@@ -56,11 +56,6 @@ namespace Microsoft.IdentityModel.Xml
         /// Gets or sets the Uniform Resource Identifier(URI) of an <see cref= "EncryptedReference" /> object.
         /// </summary>
         public string Uri { get; set; }
-
-        /// <summary>
-        /// Gets or sets a reference type.
-        /// </summary>
-        protected string ReferenceType { get; set; }
 
         abstract internal void WriteXml(XmlWriter writer);
 

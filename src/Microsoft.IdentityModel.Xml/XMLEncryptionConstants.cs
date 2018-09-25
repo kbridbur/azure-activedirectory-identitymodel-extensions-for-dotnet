@@ -10,7 +10,7 @@ namespace Microsoft.IdentityModel.Xml
     /// Constants for XML Encryption
     /// Definitions for namespace, attributes and elements as defined in http://www.w3.org/TR/xmlenc-core1/
     /// </summary>
-    internal static class XmlEncryptionConstants
+    public static class XmlEncryptionConstants
     {
 #pragma warning disable 1591
         public const string Namespace = "http://www.w3.org/2001/04/xmlenc#";

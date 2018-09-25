@@ -41,7 +41,6 @@ namespace Microsoft.IdentityModel.Xml
         /// </summary>
         public DataReference() : base()
         {
-            ReferenceType = "DataReference";
         }
 
         /// <summary>
@@ -50,7 +49,6 @@ namespace Microsoft.IdentityModel.Xml
         /// <param name="uri"></param>
         public DataReference(string uri) : base(uri)
         {
-            ReferenceType = "DataReference";
         }
 
         internal override void WriteXml(XmlWriter writer)

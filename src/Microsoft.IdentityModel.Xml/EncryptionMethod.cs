@@ -31,8 +31,9 @@ using static Microsoft.IdentityModel.Logging.LogHelper;
 namespace Microsoft.IdentityModel.Xml
 {
     /// <summary>
-    /// 
+    /// Represents the <see cref="EncryptionMethod"/> element in XML encryption  that describes the encryption algorithm applied to the cipher data. This class cannot be inherited.
     /// </summary>
+    /// <remarks> http://www.w3.org/TR/xmlenc-core/#sec-EncryptionMethod </remarks>
     public class EncryptionMethod
     {
         /// <summary>
@@ -59,7 +60,7 @@ namespace Microsoft.IdentityModel.Xml
         /// <summary>
         /// Gets or sets the digest method Uniform Resource Identifier (URI) of the current Reference.
         /// </summary>
-        public string DigestMethod { get; set; }
+        public string DigestMethod { get; set; } //todo set reference digest method
 
         internal void WriteXml(XmlWriter writer)
         {

@@ -37,11 +37,10 @@ namespace Microsoft.IdentityModel.Xml
     public sealed class KeyReference : EncryptedReference
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataReference"/> class.
+        /// Initializes a new instance of the <see cref="KeyReference"/> class.
         /// </summary>
         public KeyReference() : base()
         {
-            ReferenceType = "KeyReference";
         }
 
         /// <summary>
@@ -50,7 +49,6 @@ namespace Microsoft.IdentityModel.Xml
         /// <param name="uri"></param>
         public KeyReference(string uri) : base(uri)
         {
-            ReferenceType = "KeyReference";
         }
 
         internal override void WriteXml(XmlWriter writer)
