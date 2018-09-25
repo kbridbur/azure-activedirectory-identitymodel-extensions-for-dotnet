@@ -45,7 +45,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         private Signature _signature;
         private Saml2Advice _advice;
         private Saml2Conditions _conditions;
-        private EncryptingCredentials _encryptingCredentials;
         private string _inclusiveNamespacesPrefixList;
         private SigningCredentials _signingCredentials;
         private Saml2Subject _subject;
@@ -112,22 +111,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 return _conditions;
             }
             set => _conditions = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the credentials used for encrypting the assertion.
-        /// </summary>
-        /// <exception cref="Saml2SecurityTokenEncryptedAssertionException"> If this assertion is encrypted.</exception>
-        public EncryptingCredentials EncryptingCredentials
-        {
-            get
-            {
-                if (Encrypted)
-                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionException(FormatInvariant(LogMessages.IDX13608, nameof(EncryptingCredentials))));
-
-                return _encryptingCredentials;
-            }
-            set => _encryptingCredentials = value;
         }
 
         /// <summary>
@@ -257,6 +240,15 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         public string Version
         {
             get => Saml2Constants.Version;
+        }
+
+        /// <summary>
+        /// Gets or sets the credentials used for encrypting the assertion.
+        /// </summary>
+        public EncryptingCredentials EncryptingCredentials
+        {
+            get;
+            set;
         }
 
         /// <summary>

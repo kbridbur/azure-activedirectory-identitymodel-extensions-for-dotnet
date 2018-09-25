@@ -48,7 +48,7 @@ namespace Microsoft.IdentityModel.Xml.Tests
             {
                 PropertyNamesAndSetGetValue = new List<KeyValuePair<string, List<object>>>
                 {
-                    new KeyValuePair<string, List<object>>("CipherValue", new List<object>{null }),
+                    new KeyValuePair<string, List<object>>("CipherValue", new List<object>{null}),
                 },
                 Object = cipherData
             };

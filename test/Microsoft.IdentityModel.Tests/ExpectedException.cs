@@ -125,7 +125,6 @@ namespace Microsoft.IdentityModel.Tests
             ProcessException(exception, context.Diffs);
         }
 
-
         public void ProcessException(Exception exception, List<string> errors = null)
         {
             if (TypeExpected == null && InnerTypeExpected != null)

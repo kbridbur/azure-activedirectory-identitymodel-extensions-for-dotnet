@@ -33,7 +33,7 @@ namespace Microsoft.IdentityModel.Xml
     /// <summary>
     /// Represents the abstract base class used in XML encryption from which the <see cref="KeyReference"/> and <see cref="DataReference"/> classes derive. 
     /// </summary>
-    /// <remarks> http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#sec-ReferenceList </remarks>
+    /// <remarks> http://www.w3.org/TR/xmlenc-core1/#sec-ReferenceList </remarks>
     public abstract class EncryptedReference
     {
         /// <summary>

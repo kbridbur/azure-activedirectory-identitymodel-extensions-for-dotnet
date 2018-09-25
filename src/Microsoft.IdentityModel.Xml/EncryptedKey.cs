@@ -62,21 +62,12 @@ namespace Microsoft.IdentityModel.Xml
         }
 
         /// <summary>
-        /// Adds new <see cref="DataReference"/> to the ReferenceList of <see cref="EncryptedReference"/> elements.
+        /// Adds new <see cref="EncryptedReference"/> to the ReferenceList of <see cref="EncryptedReference"/> elements.
         /// </summary>
-        /// <param name="dataReference"></param>
-        public void AddReference(DataReference dataReference)
+        /// <param name="reference"></param>
+        public void AddReference(EncryptedReference reference)
         {
-            ReferenceList.Add(dataReference);
-        }
-
-        /// <summary>
-        /// Adds new <see cref="KeyReference"/> to the ReferenceList of <see cref="EncryptedReference"/> elements
-        /// </summary>
-        /// <param name="keyReference"></param>
-        public void AddReference(KeyReference keyReference)
-        {
-            ReferenceList.Add(keyReference);
+            ReferenceList.Add(reference);
         }
 
         internal override void WriteXml(XmlWriter writer)

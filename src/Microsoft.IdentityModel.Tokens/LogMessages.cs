@@ -116,7 +116,7 @@ namespace Microsoft.IdentityModel.Tokens
         public const string IDX10616 = "IDX10616: Encryption failed. EncryptionProvider failed for: Algorithm: '{0}', SecurityKey: '{1}'. See inner exception.";
         public const string IDX10617 = "IDX10617: Encryption failed. Keywrap is only supported for: '{0}', '{1}' and '{2}'. The content encryption specified is: '{3}'.";
         public const string IDX10618 = "IDX10618: Encryption failed. EncryptionProvider failed for: Algorithm: '{0}'. See inner exception.";
-        public const string IDX10619 = "IDX10619: Encryption failed. EncryptionProvider failed for: Algorithm: '{0}'. See inner exception.";
+        public const string IDX10619 = "IDX10619: Decryption failed. EncryptionProvider failed for: Algorithm: '{0}'. See inner exception.";
         public const string IDX10620 = "IDX10620: Decryption failed. Cipher-text size is less than 1.";
 
         // Formating
@@ -184,7 +184,7 @@ namespace Microsoft.IdentityModel.Tokens
         public const string IDX10685 = "IDX10685: Unable to Sign, Internal SignFunction is not available.";
         public const string IDX10686 = "IDX10686: Unable to Verify, Internal VerifyFunction is not available.";
         public const string IDX10687 = "IDX10687: Unable to create a AsymmetricAdapter. For NET45 or NET451 only types: '{0}' or '{1}' are supported. RSA is of type: '{2}'..";
-        public const string IDX10688 = "IDX10688: The algorithm '{0}' is not currently supported. In order to use the algorithm '{0}' one should create custom CryptoProviderFactory and AuthenticatedEncryptionProvider.";
+        public const string IDX10688 = "IDX10688: The algorithm '{0}' is not currently supported. In order to use the algorithm '{0}' one should create override CryptoProviderFactory and AuthenticatedEncryptionProvider to provide support.";
 
         // security keys
         public const string IDX10700 = "IDX10700: Invalid RsaParameters: '{0}'. Both modulus and exponent should be present";

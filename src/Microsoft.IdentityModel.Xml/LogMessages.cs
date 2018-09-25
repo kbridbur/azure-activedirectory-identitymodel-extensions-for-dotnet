@@ -78,7 +78,7 @@ namespace Microsoft.IdentityModel.Xml
         internal const string IDX30300 = "IDX30300: KeyInfo skipped unknown element: '{0}'.";
         internal const string IDX30301 = "IDX30301: Skipped loading element: '{0}'. Currently not supported.";
         internal const string IDX30302 = "IDX30302: Skipped loading element: '{0}' under node: '{1}'. Currently not supported.";
-        internal const string IDX30303 = "IDX30302: Skipped loading unknown reference element: '{0}'.";
+        internal const string IDX30303 = "IDX30303: Skipped loading unknown reference element: '{0}'.";
 
         // XML writing
         internal const string IDX30401 = "IDX30401: Unable to write XML. {0}.{1} is null or empty.";

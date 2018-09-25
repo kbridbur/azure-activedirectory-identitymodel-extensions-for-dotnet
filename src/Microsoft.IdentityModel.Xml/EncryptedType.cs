@@ -35,7 +35,7 @@ namespace Microsoft.IdentityModel.Xml
     /// Represents the abstract base class from which the classes EncryptedData and EncryptedKey derive.
     /// </summary>
     /// <remarks>
-    /// http://www.w3.org/TR/2013/REC-xmlenc-core1-20130411/#sec-EncryptedType
+    /// http://www.w3.org/TR/xmlenc-core1/#sec-EncryptedType
     /// </remarks>
     public abstract class EncryptedType
     {

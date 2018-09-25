@@ -197,6 +197,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (string.IsNullOrEmpty(token))
                 throw LogArgumentNullException(nameof(token));
 
+            if (validationParameters == null)
+                throw LogArgumentNullException(nameof(validationParameters));
+
             if (token.Length > MaximumTokenSizeInBytes)
                 throw LogExceptionMessage(new ArgumentException(FormatInvariant(TokenLogMessages.IDX10209, token.Length, MaximumTokenSizeInBytes)));
 
@@ -468,7 +471,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// <returns>A <see cref="Saml2SecurityToken"/></returns>
         /// <remarks>
         /// In case when token represents an EncryptedAssertion, Encrypted property of <see cref="Saml2Assertion"/> will be set to True
-        /// and token will be used to set EncryptedAssertion property.
+        /// and <paramref name="token"/> will be used to set EncryptedAssertion property.
         /// </remarks>
         public virtual Saml2SecurityToken ReadSaml2Token(string token)
         {
