@@ -101,8 +101,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13601 = "IDX13601: Saml2Assertion encryption failed. No support for algorithm: '{0}', SecurityKey: '{1}'.";
         internal const string IDX13602 = "IDX13602: Failed to create the token encryption provider.";
         internal const string IDX13603 = "IDX13603: Encryption failed. EncryptionProvider failed for: Algorithm: '{0}', SecurityKey: '{1}'. See inner exception.";
-        internal const string IDX13604 = "IDX13604: Exception thrown while writing EncryptedData element. See inner exception.";
-        internal const string IDX13605 = "IDX13605: Exception thrown while writing EncryptedKey element. See inner exception.";
         internal const string IDX13606 = "IDX13606: EncryptionCredentials.Key is not SymmetricSecurityKey or AsymmetricSecurityKey. EncryptionCredentials.Key: '{0}'.";
         internal const string IDX13607 = "IDX13607: Session key encryption algorithm: '{0}' is not supported.";
         internal const string IDX13608 = "IDX13608: Saml2Assertion is encrypted. Unable to get '{0}' from a Saml2EncryptedAssertion.";
