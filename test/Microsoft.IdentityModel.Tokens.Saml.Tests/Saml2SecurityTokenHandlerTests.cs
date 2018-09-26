@@ -1293,6 +1293,16 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                     TestId = nameof(ReferenceTokens.Saml2Token_EncryptedAssertion_KeyWrap_EmbeddedEncryptedKey_Invalid),
                 });
 
+                // Key-wrap algorithm not supported
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap_Valid) as Saml2SecurityToken,
+                    ValidationParameters = CreateTokenValidationParameters(signingKey, KeyingMaterial.DefaultX509Key_2048_With_KeyId),
+                    Token = ReferenceTokens.Saml2Token_EncryptedAssertion_KeyWrap_Alg_Invalid,
+                    ExpectedException = new ExpectedException(typeof(System.NotSupportedException), "IDX10661"),
+                    TestId = nameof(ReferenceTokens.Saml2Token_EncryptedAssertion_KeyWrap_Alg_Invalid),
+                });
+
                 // Encryption algorithm is not provided - currently not supported
                 theoryData.Add(new Saml2TheoryData
                 {
