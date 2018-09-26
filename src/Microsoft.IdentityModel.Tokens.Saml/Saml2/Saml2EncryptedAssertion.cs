@@ -34,17 +34,17 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
     /// <summary>
     /// Represents the <see cref="Saml2EncryptedAssertion"/> element.
     /// </summary>
-    public class Saml2EncryptedAssertion
+    internal class Saml2EncryptedAssertion
     {
         /// <summary>
         /// Represents the <see cref="EncryptedData"/> element in XML encryption.
         /// </summary>
-        public EncryptedData EncryptedData { get; set; }
+        internal EncryptedData EncryptedData { get; set; }
 
         /// <summary>
         /// Represents the <see cref="EncryptedKey"/> element in XML encryption.
         /// </summary>
-        public EncryptedKey EncryptedKey { get; set; }
+        internal EncryptedKey EncryptedKey { get; set; }
 
         internal virtual void ReadXml(XmlDictionaryReader reader)
         {
