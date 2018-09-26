@@ -332,7 +332,7 @@ namespace Microsoft.IdentityModel.Tokens
 
 #if NET461 || NETSTANDARD1_4 || NETSTANDARD2_0
             // Here we can use RSA straight up.
-            _rsaEncryptionPadding = (algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal) || algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap))
+            _rsaEncryptionPadding = (algorithm.Equals(SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal) || algorithm.Equals(SecurityAlgorithms.RsaOaepKeyWrap) || algorithm.Equals(SecurityAlgorithms.RsaOaepMgf1pKeyWrap))
                         ? RSAEncryptionPadding.OaepSHA1
                         : RSAEncryptionPadding.Pkcs1;
             RSA = rsa;
