@@ -119,8 +119,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 // Add reference from EncrypedKey to EncryptedData
                 encryptedAssertion.EncryptedKey.AddReference(new DataReference(encryptedAssertion.EncryptedData.Id));
 
-                // Set Digest method for EncryptedKey
-                if (SecurityAlgorithms.RsaOaepMgf1pKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal))
+                // Set Digest method for EncryptedKey (AES-GCM)
+                if (SecurityAlgorithms.RsaOaepMgf1pKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal)
+                    || SecurityAlgorithms.RsaOaepKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal))
                     encryptedAssertion.EncryptedKey.EncryptionMethod.DigestMethod = SecurityAlgorithms.Sha1Digest;
 
                 // Set X509CertificateData
