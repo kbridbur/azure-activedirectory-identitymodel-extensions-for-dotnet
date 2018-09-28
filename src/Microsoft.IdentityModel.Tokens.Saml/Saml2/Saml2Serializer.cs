@@ -93,50 +93,8 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             ValidateEncryptingCredentials(encryptingCredentials);
 
             var encryptedAssertion = new Saml2EncryptedAssertion();
-
-            // SymmetricSecurityKey is provided:
-            // Pre-shared symmetric key (session key) is used to encrypt an assertion
-            // Session key will not be serialized, but KeyName will be set if available
-            if (encryptingCredentials.Key is SymmetricSecurityKey)
-            {
-                encryptedAssertion.EncryptedData = CreateEncryptedDataHelper((SymmetricSecurityKey)encryptingCredentials.Key, encryptingCredentials.Enc, assertionData, encryptingCredentials);
-                encryptedAssertion.EncryptedData.KeyInfo.KeyName = encryptingCredentials.Key.KeyId;
-            }
-            // AsymmetricSecurityKey is provided:
-            // New session key will be created to encrypt an assertion
-            // Session key will be wrapped with provided AsymmetricSecurityKey
-            else if (encryptingCredentials.Key is AsymmetricSecurityKey)
-            {
-                SymmetricSecurityKey sessionKey = CreateSessionKeyBytes(encryptingCredentials.Enc);
-
-                // Create EncryptedData
-                encryptedAssertion.EncryptedData = CreateEncryptedDataHelper(sessionKey, encryptingCredentials.Enc, assertionData, encryptingCredentials);
-                // Set EncryptedData RetrievalMethodUri to ID of EncryptedKey
-                encryptedAssertion.EncryptedData.KeyInfo.RetrievalMethodUri = encryptingCredentials.Key.KeyId;
-
-                // Create EncryptedKey
-                encryptedAssertion.EncryptedKey = CreateEncryptedKeyHelper((AsymmetricSecurityKey)encryptingCredentials.Key, sessionKey, encryptingCredentials.Alg, encryptingCredentials);
-                // Add reference from EncrypedKey to EncryptedData
-                encryptedAssertion.EncryptedKey.AddReference(new DataReference(encryptedAssertion.EncryptedData.Id));
-
-                // Set Digest method for EncryptedKey (AES-GCM)
-                if (SecurityAlgorithms.RsaOaepMgf1pKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal)
-                    || SecurityAlgorithms.RsaOaepKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal))
-                    encryptedAssertion.EncryptedKey.EncryptionMethod.DigestMethod = SecurityAlgorithms.Sha1Digest;
-
-                // Set X509CertificateData
-                if (encryptingCredentials.Key is X509SecurityKey)
-                {
-                    var cert = (encryptingCredentials.Key as X509SecurityKey).Certificate;
-                    var x509Data = new X509Data(cert);
-                    encryptedAssertion.EncryptedKey.KeyInfo.X509Data.Add(x509Data);
-                }
-            }
-            else
-            {
-                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13606, encryptingCredentials.Key)));
-            }
-
+            encryptedAssertion.EncryptedData = CreateEncryptedData(assertionData, encryptingCredentials, out SymmetricSecurityKey sessionKey);
+            encryptedAssertion.EncryptedKey = CreateEncryptedKey(encryptingCredentials, sessionKey, encryptedAssertion.EncryptedData.Id);
             return encryptedAssertion;
         }
 
@@ -2519,20 +2477,56 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             writer.WriteEndElement();
         }
 
-        private EncryptedData CreateEncryptedDataHelper(SymmetricSecurityKey key, string algorithm, byte[] assertionData, EncryptingCredentials encryptingCredentials)
+        private EncryptedData CreateEncryptedData(byte[] assertionData, EncryptingCredentials encryptingCredentials, out SymmetricSecurityKey sessionKey)
         {
+            if (encryptingCredentials == null)
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13624));
+
+            var encryptedData = new EncryptedData();
+            string algorithm = encryptingCredentials.Enc;
+
+            // SymmetricSecurityKey is provided:
+            // Pre-shared symmetric key (session key) is used to encrypt an assertion
+            // Session key will not be serialized, but KeyName will be set if available
+            if (encryptingCredentials.Key is SymmetricSecurityKey)
+            {
+                sessionKey = (SymmetricSecurityKey)encryptingCredentials.Key;
+                encryptedData.KeyInfo.KeyName = sessionKey.KeyId;
+            }
+            // AsymmetricSecurityKey is provided:
+            // New session key will be created to encrypt an assertion
+            else if (encryptingCredentials.Key is AsymmetricSecurityKey)
+            {
+                sessionKey = CreateSessionKeyBytes(algorithm);
+                encryptedData.KeyInfo.RetrievalMethodUri = encryptingCredentials.Key.KeyId;
+            }
+            else
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13606, encryptingCredentials.Key)));
+            }
+
             var cryptoProviderFactory = encryptingCredentials.CryptoProviderFactory ?? encryptingCredentials.Key.CryptoProviderFactory;
 
             if (cryptoProviderFactory == null)
                 throw LogExceptionMessage(new ArgumentException(LogMessages.IDX13600));
 
-            if (!cryptoProviderFactory.IsSupportedAlgorithm(algorithm, key))
-                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13601, algorithm, key)));
+            if (!cryptoProviderFactory.IsSupportedAlgorithm(algorithm, sessionKey))
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13601, algorithm, sessionKey)));
 
+            // Encrypt assertion data
             AuthenticatedEncryptionResult authenticatedEncryptionResult = null;
-            var authenticatedEncryptionProvider = cryptoProviderFactory.CreateAuthenticatedEncryptionProvider(key, algorithm);
-            if (authenticatedEncryptionProvider == null)
-                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13602));
+            AuthenticatedEncryptionProvider authenticatedEncryptionProvider = null;
+            try
+            {
+                authenticatedEncryptionProvider = cryptoProviderFactory.CreateAuthenticatedEncryptionProvider(sessionKey, algorithm);
+
+                if (authenticatedEncryptionProvider == null)
+                    throw new Saml2SecurityTokenEncryptedAssertionEncryptionException();
+            }
+            catch (Exception ex)
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13602, ex));
+            }
 
             try
             {
@@ -2540,10 +2534,10 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             }
             catch (Exception ex)
             {
-                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13603, algorithm, key), ex));
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13603, algorithm, sessionKey), ex));
             }
 
-            var encryptedData = new EncryptedData();
+            // Populate EncryptedData
             encryptedData.CipherData.CipherValue = Utility.ConcatByteArrays(authenticatedEncryptionResult.IV, authenticatedEncryptionResult.Ciphertext, authenticatedEncryptionResult.AuthenticationTag);
             encryptedData.EncryptionMethod = new EncryptionMethod(algorithm);
             encryptedData.Type = XmlEncryptionConstants.EncryptedDataTypes.Element;
@@ -2552,28 +2546,75 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             return encryptedData;
         }
 
-        private EncryptedKey CreateEncryptedKeyHelper(AsymmetricSecurityKey key, SymmetricSecurityKey sessionKey, string algorithm, EncryptingCredentials encryptingCredentials)
+        private EncryptedKey CreateEncryptedKey(EncryptingCredentials encryptingCredentials, SymmetricSecurityKey sessionKey, string encryptedDataId)
         {
-            var cryptoProviderFactory = encryptingCredentials.CryptoProviderFactory ?? encryptingCredentials.Key.CryptoProviderFactory;
+            if (encryptingCredentials == null)
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13624));
 
-            if (cryptoProviderFactory == null)
-                throw LogExceptionMessage(new ArgumentException(LogMessages.IDX13600));
+            if (sessionKey == null)
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13629));
 
-            if (!cryptoProviderFactory.IsSupportedAlgorithm(algorithm, key))
-                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13601, algorithm, key)));
-
-            var encryptedKey = new EncryptedKey
+            // AsymmetricSecurityKey is provided:
+            // New session key will be created to encrypt an assertion
+            // Session key will be wrapped with provided AsymmetricSecurityKey
+            if (encryptingCredentials.Key is AsymmetricSecurityKey)
             {
-                Id = key.KeyId,
-                EncryptionMethod = new EncryptionMethod(algorithm)
-            };
+                var cryptoProviderFactory = encryptingCredentials.CryptoProviderFactory ?? encryptingCredentials.Key.CryptoProviderFactory;
+                var key = encryptingCredentials.Key;
+                var algorithm = encryptingCredentials.Alg;
 
-            var keyWrapProvider = cryptoProviderFactory.CreateKeyWrapProvider(key, algorithm);
-            var wrappedKey = keyWrapProvider.WrapKey(sessionKey.Key);
+                if (cryptoProviderFactory == null)
+                    throw LogExceptionMessage(new ArgumentException(LogMessages.IDX13600));
 
-            encryptedKey.CipherData.CipherValue = wrappedKey;
+                if (!cryptoProviderFactory.IsSupportedAlgorithm(algorithm, key))
+                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13601, algorithm, key)));
 
-            return encryptedKey;
+                var encryptedKey = new EncryptedKey
+                {
+                    Id = key.KeyId,
+                    EncryptionMethod = new EncryptionMethod(algorithm)
+                };
+
+                // Wrap the sessionKey
+                try
+                {
+                    var keyWrapProvider = cryptoProviderFactory.CreateKeyWrapProvider(key, algorithm);
+                    var wrappedKey = keyWrapProvider.WrapKey(sessionKey.Key);
+                    encryptedKey.CipherData.CipherValue = wrappedKey;
+                }
+                catch (Exception ex)
+                {
+                    throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13603, algorithm, sessionKey), ex));
+                }
+
+                // Add reference from EncrypedKey to EncryptedData
+                encryptedKey.AddReference(new DataReference(encryptedDataId));
+
+                // Set Digest method for EncryptedKey (AES-GCM)
+                if (SecurityAlgorithms.RsaOaepMgf1pKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal)
+                    || SecurityAlgorithms.RsaOaepKeyWrap.Equals(encryptingCredentials.Alg, StringComparison.Ordinal))
+                    encryptedKey.EncryptionMethod.DigestMethod = SecurityAlgorithms.Sha1Digest;
+
+                // Set X509CertificateData if available
+                if (encryptingCredentials.Key is X509SecurityKey)
+                {
+                    var cert = (encryptingCredentials.Key as X509SecurityKey).Certificate;
+                    var x509Data = new X509Data(cert);
+                    encryptedKey.KeyInfo.X509Data.Add(x509Data);
+                }
+
+                return encryptedKey;
+            }
+            else if (encryptingCredentials.Key is SymmetricSecurityKey)
+            {
+                // SymmetricSecurityKey is provided:
+                // Session key will not be serialized - EncryptedKey should be null
+                return null;
+            }
+            else
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13606, encryptingCredentials.Key)));
+            }
         }
 
         private SymmetricSecurityKey CreateSessionKeyBytes(string algorithm)

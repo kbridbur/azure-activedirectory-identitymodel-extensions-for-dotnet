@@ -104,7 +104,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13606 = "IDX13606: EncryptionCredentials.Key is not SymmetricSecurityKey or AsymmetricSecurityKey. EncryptionCredentials.Key: '{0}'.";
         internal const string IDX13607 = "IDX13607: Session key encryption algorithm: '{0}' is not supported.";
         internal const string IDX13608 = "IDX13608: Saml2Assertion is encrypted. Unable to get '{0}' from a Saml2EncryptedAssertion.";
-        internal const string IDX13609 = "IDX13609: Unable to check if an Assertion is a Saml2EncryptedAssertion. Assertion: '{0}'";
+        internal const string IDX13609 = "IDX13609: Unable to check if an Assertion is a Saml2EncryptedAssertion. Assertion: '{0}'.";
         internal const string IDX13610 = "IDX13610: Saml2EncryptedAssertion validation failed. EncryptedData is null.";
         internal const string IDX13611 = "IDX13611: Saml2EncryptedAssertion validation failed. EncryptionMethod is not present. As there is no support for users to provide an encryption algorithm - EncryptionMethod is treated as required for now.";
         internal const string IDX13612 = "IDX13612: Saml2EncryptedAssertion validation failed. CypherValue is null.";
@@ -123,6 +123,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13626 = "IDX13626: Encryption failed. Saml2 encryption algorithm should be set to '{0}' when pre-shared session key is used to encrypt data. The data encryption specified is: '{1}'.";
         internal const string IDX13627 = "IDX13627: Encryption failed. Saml2 key wrap is only supported for: '{0}', and '{1}'. The key wrap algorithm specified is: '{2}'.";
         internal const string IDX13628 = "IDX13628: Encryption failed. Key is either null or it's not Symmetric/Asymmetric SecurityKey.";
+        internal const string IDX13629 = "IDX13629: SessionKey is null. Unable to Wrap a null session key.";
 
         // IDX11900 - AuthorizationDecisionStatement
         internal const string IDX13900 = "IDX13900: Unable to write Saml2Assertion: {0} is required, {1} is null or empty.";
