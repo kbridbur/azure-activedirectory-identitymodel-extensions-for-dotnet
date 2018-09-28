@@ -66,13 +66,7 @@ namespace Microsoft.IdentityModel.Tokens
                 throw LogHelper.LogArgumentNullException(nameof(algorithm));
 
             // Allow constructing AuthenticatedEncryptionProvider in case when AesGcm algorithm is passed to enable tests
-            // Until there is no AES-GCM support, Encrypt and Decrypt operations will throw an exception
-            if (IsAesGcmAlgorithm(algorithm))
-            {
-                Key = key;
-                Algorithm = algorithm;
-            }
-            else
+            if (!IsAesGcmAlgorithm(algorithm))
             {
                 if (!IsSupportedAlgorithm(key, algorithm))
                     throw LogHelper.LogExceptionMessage(new ArgumentException(LogHelper.FormatInvariant(LogMessages.IDX10668, GetType(), algorithm, key)));
@@ -84,10 +78,10 @@ namespace Microsoft.IdentityModel.Tokens
                 _symmetricSignatureProvider = key.CryptoProviderFactory.CreateForSigning(_authenticatedkeys.HmacKey, _hmacAlgorithm) as SymmetricSignatureProvider;
                 if (_symmetricSignatureProvider == null)
                     throw LogHelper.LogExceptionMessage(new ArgumentException(LogHelper.FormatInvariant(LogMessages.IDX10649, Algorithm)));
-
-                Key = key;
-                Algorithm = algorithm;
             }
+
+            Key = key;
+            Algorithm = algorithm;
         }
 
         /// <summary>
@@ -137,7 +131,7 @@ namespace Microsoft.IdentityModel.Tokens
 
             if (IsAesGcmAlgorithm(Algorithm))
             {
-                // still no support for AES-GCM
+                // Until there is no AES-GCM support, Encrypt and Decrypt operations will throw an exception
                 throw LogHelper.LogExceptionMessage(new SecurityTokenEncryptionFailedException(LogHelper.FormatInvariant(LogMessages.IDX10688, Algorithm)));
             }
 
@@ -195,7 +189,7 @@ namespace Microsoft.IdentityModel.Tokens
 
             if (IsAesGcmAlgorithm(Algorithm))
             {
-                // still no support for AES-GCM
+                // Until there is no AES-GCM support, Encrypt and Decrypt operations will throw an exception
                 throw LogHelper.LogExceptionMessage(new SecurityTokenDecryptionFailedException(LogHelper.FormatInvariant(LogMessages.IDX10688, Algorithm)));
             }
 
