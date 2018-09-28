@@ -530,7 +530,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// </summary>
         /// <param name="assertion">String representation of an assertion.</param>
         /// <returns>'true' if assertion is encrypted, 'false' otherwise.</returns>
-        internal static bool IsSaml2EncryptedAssertion(string assertion)
+        private bool IsSaml2EncryptedAssertion(string assertion)
         {
             using (var stringReader = new StringReader(assertion))
             {
@@ -545,9 +545,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                         reader.MoveToContent();
                         return reader.IsStartElement(Saml2Constants.Elements.EncryptedAssertion, Saml2Constants.Namespace);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        LogInformation(LogMessages.IDX13609, assertion);
+                        LogInformation(LogMessages.IDX13609, assertion, ex);
                         return false;
                     }
                 }

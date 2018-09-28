@@ -104,7 +104,7 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         internal const string IDX13606 = "IDX13606: EncryptionCredentials.Key is not SymmetricSecurityKey or AsymmetricSecurityKey. EncryptionCredentials.Key: '{0}'.";
         internal const string IDX13607 = "IDX13607: Session key encryption algorithm: '{0}' is not supported.";
         internal const string IDX13608 = "IDX13608: Saml2Assertion is encrypted. Unable to get '{0}' from a Saml2EncryptedAssertion.";
-        internal const string IDX13609 = "IDX13609: Unable to check if an Assertion is a Saml2EncryptedAssertion. Assertion: '{0}'.";
+        internal const string IDX13609 = "IDX13609: Unable to check if an Assertion is a Saml2EncryptedAssertion. Assertion: '{0}'. Inner exception: '{1}'.";
         internal const string IDX13610 = "IDX13610: Saml2EncryptedAssertion validation failed. EncryptedData is null.";
         internal const string IDX13611 = "IDX13611: Saml2EncryptedAssertion validation failed. EncryptionMethod is not present. As there is no support for users to provide an encryption algorithm - EncryptionMethod is treated as required for now.";
         internal const string IDX13612 = "IDX13612: Saml2EncryptedAssertion validation failed. CypherValue is null.";
