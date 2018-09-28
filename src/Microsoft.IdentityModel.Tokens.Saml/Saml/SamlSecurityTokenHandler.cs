@@ -35,6 +35,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Xml;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Xml;
 using static Microsoft.IdentityModel.Logging.LogHelper;
 using TokenLogMessages = Microsoft.IdentityModel.Tokens.LogMessages;
 
@@ -151,16 +152,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml
 
             try
             {
-                using (var sr = new StringReader(securityToken))
+                using (var reader = XmlUtil.CreateDefaultXmlDictionaryReader(securityToken))
                 {
-                    var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
-#if NET45 || NET451
-                    settings.XmlResolver = null;
-#endif
-                    using (var reader = XmlDictionaryReader.CreateDictionaryReader(XmlReader.Create(sr, settings))) 
-                    {
-                        return CanReadToken(reader);
-                    }
+                    return CanReadToken(reader);
                 }
             }
             catch (Exception)
@@ -729,13 +723,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml
             if (token.Length > MaximumTokenSizeInBytes)
                 throw LogExceptionMessage(new ArgumentException(FormatInvariant(TokenLogMessages.IDX10209, token.Length, MaximumTokenSizeInBytes)));
 
-            using (var sr = new StringReader(token))
+            using (var reader = XmlUtil.CreateDefaultXmlReader(token))
             {
-                var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
-#if NET45 || NET451
-                settings.XmlResolver = null;
-#endif
-                return new SamlSecurityToken(Serializer.ReadAssertion(XmlReader.Create(sr, settings))); 
+                return new SamlSecurityToken(Serializer.ReadAssertion(reader));
             }
         }
 

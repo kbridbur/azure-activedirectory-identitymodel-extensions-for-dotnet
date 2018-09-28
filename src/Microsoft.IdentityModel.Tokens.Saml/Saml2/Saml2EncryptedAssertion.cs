@@ -51,6 +51,11 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (reader == null)
                 throw LogHelper.LogArgumentNullException(nameof(reader));
 
+            if (!(reader.IsStartElement(Saml2Constants.Elements.EncryptedAssertion, Saml2Constants.Namespace)))
+                throw LogHelper.LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionDecryptionException(LogHelper.FormatInvariant(LogMessages.IDX13620, Saml2Constants.Elements.EncryptedAssertion, reader.Name)));
+
+            reader.ReadStartElement();
+
             EncryptedData = new EncryptedData();
             EncryptedData.ReadXml(reader);
 

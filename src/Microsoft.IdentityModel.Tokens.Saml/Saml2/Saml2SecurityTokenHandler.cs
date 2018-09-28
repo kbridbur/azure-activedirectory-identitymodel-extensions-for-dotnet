@@ -100,19 +100,12 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
 
             try
             {
-                using (var sr = new StringReader(token))
+                using (var reader = XmlUtil.CreateDefaultXmlDictionaryReader(token))
                 {
-                    var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
-#if NET45 || NET451
-                    settings.XmlResolver = null;
-#endif                 
-                    using (var reader = XmlDictionaryReader.CreateDictionaryReader(XmlReader.Create(sr, settings)))
-                    {
-                        return CanReadToken(reader);
-                    }
+                    return CanReadToken(reader);
                 }
             }
-            catch(Exception)
+            catch(Exception )
             {
                 return false;
             }
@@ -481,13 +474,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (token.Length > MaximumTokenSizeInBytes)
                 throw LogExceptionMessage(new ArgumentException(FormatInvariant(TokenLogMessages.IDX10209, token.Length, MaximumTokenSizeInBytes)));
 
-            using (var stringReader = new StringReader(token))
+            using (var reader = XmlUtil.CreateDefaultXmlReader(token))
             {
-                var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
-#if NET45 || NET451
-                settings.XmlResolver = null;
-#endif
-                return new Saml2SecurityToken(Serializer.ReadAssertion(XmlReader.Create(stringReader, settings)));
+                return new Saml2SecurityToken(Serializer.ReadAssertion(reader));
             }
         }
 
@@ -532,24 +521,17 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
         /// <returns>'true' if assertion is encrypted, 'false' otherwise.</returns>
         private bool IsSaml2EncryptedAssertion(string assertion)
         {
-            using (var stringReader = new StringReader(assertion))
+            using (var reader = XmlUtil.CreateDefaultXmlReader(assertion))
             {
-                var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
-#if NET45 || NET451
-                settings.XmlResolver = null;
-#endif
-                using (var reader = XmlReader.Create(stringReader, settings))
+                try
                 {
-                    try
-                    {
-                        reader.MoveToContent();
-                        return reader.IsStartElement(Saml2Constants.Elements.EncryptedAssertion, Saml2Constants.Namespace);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogInformation(LogMessages.IDX13609, assertion, ex);
-                        return false;
-                    }
+                    reader.MoveToContent();
+                    return reader.IsStartElement(Saml2Constants.Elements.EncryptedAssertion, Saml2Constants.Namespace);
+                }
+                catch (Exception ex)
+                {
+                    LogInformation(LogMessages.IDX13609, assertion, ex);
+                    return false;
                 }
             }
         }

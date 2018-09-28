@@ -479,23 +479,11 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
 
         internal Saml2EncryptedAssertion ReadEncryptedAssertion(string assertion)
         {
-            using (var stringReader = new StringReader(assertion))
+            using (var reader = XmlUtil.CreateDefaultXmlDictionaryReader(assertion))
             {
-                var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
-#if NET45 || NET451
-                settings.XmlResolver = null;
-#endif
-                using (var reader = XmlDictionaryReader.CreateDictionaryReader(XmlReader.Create(stringReader, settings)))
-                {
-                    if (!(reader.IsStartElement(Saml2Constants.Elements.EncryptedAssertion, Saml2Constants.Namespace)))
-                        throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionDecryptionException(FormatInvariant(LogMessages.IDX13620, Saml2Constants.Elements.EncryptedAssertion, reader.Name)));
-
-                    reader.ReadStartElement();
-
-                    var encryptedAssertion = new Saml2EncryptedAssertion();
-                    encryptedAssertion.ReadXml(reader);
-                    return encryptedAssertion;
-                }
+                var encryptedAssertion = new Saml2EncryptedAssertion();
+                encryptedAssertion.ReadXml(reader);
+                return encryptedAssertion;
             }
         }
 
