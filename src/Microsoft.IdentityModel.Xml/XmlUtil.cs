@@ -433,9 +433,9 @@ namespace Microsoft.IdentityModel.Xml
         }
 
 #if NET45 || NET451
-        private static readonly XmlReaderSettings SafeSettings = new XmlReaderSettings { XmlResolver = null, DtdProcessing = DtdProcessing.Prohibit };
+        private static readonly XmlReaderSettings SafeXmlReaderSettings = new XmlReaderSettings { XmlResolver = null, DtdProcessing = DtdProcessing.Prohibit };
 #else
-        private static readonly XmlReaderSettings SafeSettings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
+        private static readonly XmlReaderSettings SafeXmlReaderSettings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
 #endif
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace Microsoft.IdentityModel.Xml
         public static XmlReader CreateDefaultXmlReader(string input)
         {
             var stringReader = new StringReader(input);
-            return XmlReader.Create(stringReader, SafeSettings);
+            return XmlReader.Create(stringReader, SafeXmlReaderSettings);
         }
 
         /// <summary>
