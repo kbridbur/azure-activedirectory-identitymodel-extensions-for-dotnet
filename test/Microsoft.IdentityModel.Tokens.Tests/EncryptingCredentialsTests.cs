@@ -124,6 +124,13 @@ namespace Microsoft.IdentityModel.Tokens.Tests
                     Alg = SecurityAlgorithms.RsaOaepMgf1pKeyWrap,
                     Enc = SecurityAlgorithms.Aes128CbcHmacSha256,
                     TestId = "ValidTest"
+                },
+                new EncryptingCredentialsTheoryData
+                {
+                    Key = Default.AsymmetricEncryptionKeyPublic,
+                    Alg = SecurityAlgorithms.RsaOaepKeyWrap,
+                    Enc = SecurityAlgorithms.Aes128CbcHmacSha256,
+                    TestId = "ValidTest_WrongRsaOaepKeyWrapIdentifier"
                 }
             };
         }

@@ -1701,6 +1701,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                 var encryptingCredentials_KeyWrap_128_RSAOAEP = new X509EncryptingCredentials(cert, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, SecurityAlgorithms.Aes128Gcm);
                 var encryptingCredentials_KeyWrap_192_RSAOAEP = new X509EncryptingCredentials(cert, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, SecurityAlgorithms.Aes192Gcm);
                 var encryptingCredentials_KeyWrap_256_RSAOAEP = new X509EncryptingCredentials(cert, SecurityAlgorithms.RsaOaepMgf1pKeyWrap, SecurityAlgorithms.Aes256Gcm);
+                var encryptingCredentials_KeyWrap_128_Wrong_RSAOAEP_Identifier = new X509EncryptingCredentials(cert, SecurityAlgorithms.RsaOaepKeyWrap, SecurityAlgorithms.Aes128Gcm);
+                var encryptingCredentials_KeyWrap_192_Wrong_RSAOAEP_Identifier = new X509EncryptingCredentials(cert, SecurityAlgorithms.RsaOaepKeyWrap, SecurityAlgorithms.Aes192Gcm);
+                var encryptingCredentials_KeyWrap_256_Wrong_RSAOAEP_Identifier = new X509EncryptingCredentials(cert, SecurityAlgorithms.RsaOaepKeyWrap, SecurityAlgorithms.Aes256Gcm);
 
                 //SET HELPER CRYPTO PROVIDER FACTORY - remove when AES-GCM is released and supported
                 encryptingCredentials128_PreShared.CryptoProviderFactory = new AesGcmProviderFactory();
@@ -1709,6 +1712,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                 encryptingCredentials_KeyWrap_128_RSAOAEP.CryptoProviderFactory = new AesGcmProviderFactory();
                 encryptingCredentials_KeyWrap_192_RSAOAEP.CryptoProviderFactory = new AesGcmProviderFactory();
                 encryptingCredentials_KeyWrap_256_RSAOAEP.CryptoProviderFactory = new AesGcmProviderFactory();
+                encryptingCredentials_KeyWrap_128_Wrong_RSAOAEP_Identifier.CryptoProviderFactory = new AesGcmProviderFactory();
+                encryptingCredentials_KeyWrap_192_Wrong_RSAOAEP_Identifier.CryptoProviderFactory = new AesGcmProviderFactory();
+                encryptingCredentials_KeyWrap_256_Wrong_RSAOAEP_Identifier.CryptoProviderFactory = new AesGcmProviderFactory();
 
                 // token descriptors (Pre_Shared for one scenario and KeyWrap for another one)
                 var tokenDescriptor_128_PreShared = CreateTokenDescriptor(signingCredentials, encryptingCredentials128_PreShared);
@@ -1717,6 +1723,9 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                 var tokenDescriptor_KeyWrap_128_RSAOAEP = CreateTokenDescriptor(signingCredentials, encryptingCredentials_KeyWrap_128_RSAOAEP);
                 var tokenDescriptor_KeyWrap_192_RSAOAEP = CreateTokenDescriptor(signingCredentials, encryptingCredentials_KeyWrap_192_RSAOAEP);
                 var tokenDescriptor_KeyWrap_256_RSAOAEP = CreateTokenDescriptor(signingCredentials, encryptingCredentials_KeyWrap_256_RSAOAEP);
+                var tokenDescriptor_KeyWrap_128_Wrong_RSAOAEP_Identifier = CreateTokenDescriptor(signingCredentials, encryptingCredentials_KeyWrap_128_Wrong_RSAOAEP_Identifier);
+                var tokenDescriptor_KeyWrap_192_Wrong_RSAOAEP_Identifier = CreateTokenDescriptor(signingCredentials, encryptingCredentials_KeyWrap_192_Wrong_RSAOAEP_Identifier);
+                var tokenDescriptor_KeyWrap_256_Wrong_RSAOAEP_Identifier = CreateTokenDescriptor(signingCredentials, encryptingCredentials_KeyWrap_256_Wrong_RSAOAEP_Identifier);
 
                 var tokenDescriptor_KeyWrap_Signed = new SecurityTokenDescriptor
                 {
@@ -1780,6 +1789,30 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                     ValidationParameters = CreateTokenValidationParameters(signingKey, KeyingMaterial.DefaultX509Key_2048_With_KeyId),
                     ExpectedException = ExpectedException.NoExceptionExpected,
                     TestId = nameof(tokenDescriptor_KeyWrap_256_RSAOAEP),
+                });
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap_128_Wrong_RSAOAEP_Identifier) as Saml2SecurityToken,
+                    ValidationParameters = CreateTokenValidationParameters(signingKey, KeyingMaterial.DefaultX509Key_2048_With_KeyId),
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    TestId = nameof(tokenDescriptor_KeyWrap_128_Wrong_RSAOAEP_Identifier),
+                });
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap_192_Wrong_RSAOAEP_Identifier) as Saml2SecurityToken,
+                    ValidationParameters = CreateTokenValidationParameters(signingKey, KeyingMaterial.DefaultX509Key_2048_With_KeyId),
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    TestId = nameof(tokenDescriptor_KeyWrap_192_Wrong_RSAOAEP_Identifier),
+                });
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap_256_Wrong_RSAOAEP_Identifier) as Saml2SecurityToken,
+                    ValidationParameters = CreateTokenValidationParameters(signingKey, KeyingMaterial.DefaultX509Key_2048_With_KeyId),
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    TestId = nameof(tokenDescriptor_KeyWrap_256_Wrong_RSAOAEP_Identifier),
                 });
 
                 return theoryData;
