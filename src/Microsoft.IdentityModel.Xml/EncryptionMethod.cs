@@ -106,13 +106,13 @@ namespace Microsoft.IdentityModel.Xml
                     if (reader.IsStartElement(XmlSignatureConstants.Elements.DigestMethod, XmlSignatureConstants.Namespace))
                     {
                         DigestMethod = reader.GetAttribute(XmlSignatureConstants.Attributes.Algorithm, null);
-                        reader.Read();
                     }
                     else
                     {
                         LogInformation(LogMessages.IDX30302, reader.LocalName, XmlEncryptionConstants.Elements.EncryptionMethod);
-                        reader.Skip();
                     }
+
+                    reader.Skip();
                 }
 
                 reader.ReadEndElement();

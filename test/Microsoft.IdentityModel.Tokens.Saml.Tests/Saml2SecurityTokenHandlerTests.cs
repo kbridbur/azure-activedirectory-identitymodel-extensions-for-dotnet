@@ -1223,6 +1223,42 @@ namespace Microsoft.IdentityModel.Tokens.Saml.Tests
                     TestId = nameof(ReferenceTokens.Saml2Token_EncryptedAssertion_KeyWrap_Valid),
                 });
 
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap_Valid) as Saml2SecurityToken,
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    ValidationParameters = CreateTokenValidationParameters(signingKey, KeyingMaterial.DefaultX509Key_2048_With_KeyId),
+                    Token = ReferenceTokens.Saml2Token_EncryptedAssertion_KeyWrap_DataReference_AsNonEmptyElement_Valid,
+                    TestId = nameof(ReferenceTokens.Saml2Token_EncryptedAssertion_KeyWrap_DataReference_AsNonEmptyElement_Valid),
+                });
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_KeyWrap_Valid) as Saml2SecurityToken,
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    ValidationParameters = CreateTokenValidationParameters(signingKey, KeyingMaterial.DefaultX509Key_2048_With_KeyId),
+                    Token = ReferenceTokens.Saml2Token_EncryptedAssertion_KeyWrap_DigestMethod_AsNonEmptyElement_Valid,
+                    TestId = nameof(ReferenceTokens.Saml2Token_EncryptedAssertion_KeyWrap_DigestMethod_AsNonEmptyElement_Valid),
+                });
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_PreSharedSessionKey_Valid) as Saml2SecurityToken,
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    ValidationParameters = CreateTokenValidationParameters(signingKey, sessionKey),
+                    Token = ReferenceTokens.Saml2Token_EncryptedAssertion_SessionKey_EncryptionMethod_AsNonEmptyElement_Valid,
+                    TestId = nameof(ReferenceTokens.Saml2Token_EncryptedAssertion_SessionKey_EncryptionMethod_AsNonEmptyElement_Valid),
+                });
+
+                theoryData.Add(new Saml2TheoryData
+                {
+                    SecurityToken = tokenHandler.CreateToken(tokenDescriptor_PreSharedSessionKey_Valid) as Saml2SecurityToken,
+                    ExpectedException = ExpectedException.NoExceptionExpected,
+                    ValidationParameters = CreateTokenValidationParameters(signingKey, sessionKey),
+                    Token = ReferenceTokens.Saml2Token_EncryptedAssertion_SessionKey_KeyInfoAsEmptyElement_Valid,
+                    TestId = nameof(ReferenceTokens.Saml2Token_EncryptedAssertion_SessionKey_KeyInfoAsEmptyElement_Valid),
+                });
+
                 // Bad content. For AES-GCM: IV takes 12 bytes, Auth Tag 16 bytes => Cipher-text size is less than 1
                 theoryData.Add(new Saml2TheoryData
                 {

@@ -67,7 +67,7 @@ namespace Microsoft.IdentityModel.Xml
             if (reader.IsStartElement(XmlEncryptionConstants.Elements.KeyReference, XmlEncryptionConstants.Namespace) || reader.IsStartElement(XmlEncryptionConstants.Elements.DataReference, XmlEncryptionConstants.Namespace))
             {
                 Uri = reader.GetAttribute(XmlEncryptionConstants.Attributes.Uri, null);
-                reader.Read();
+                reader.Skip();
             }
         }
     }

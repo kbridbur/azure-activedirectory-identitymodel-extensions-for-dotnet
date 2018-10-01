@@ -291,6 +291,12 @@ namespace Microsoft.IdentityModel.Xml
 
             if (reader.IsStartElement(XmlSignatureConstants.Elements.KeyInfo, XmlSignatureConstants.Namespace))
             {
+                if (reader.IsEmptyElement)
+                {
+                    reader.Skip();
+                    return;
+                }
+
                 reader.ReadStartElement(XmlSignatureConstants.Elements.KeyInfo, XmlSignatureConstants.Namespace);
 
                 while (reader.IsStartElement())
