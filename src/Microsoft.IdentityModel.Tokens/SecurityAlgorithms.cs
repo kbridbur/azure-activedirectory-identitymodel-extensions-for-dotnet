@@ -39,10 +39,18 @@ namespace Microsoft.IdentityModel.Tokens
         public const string Aes256Encryption = "http://www.w3.org/2001/04/xmlenc#aes256-cbc";
         public const string DesEncryption = "http://www.w3.org/2001/04/xmlenc#des-cbc";
 
-        // Currently not supported. It's possible to provide your own implementation of the algorithm by overriding CryptoProviderFactory and AuthenticatedEncryptionProvider.
         // See: https://www.w3.org/TR/xmlenc-core1/#sec-AES-GCM
+        /// <summary>
+        /// Currently not supported. It's possible to provide your own implementation of the algorithm by overriding CryptoProviderFactory and AuthenticatedEncryptionProvider.
+        /// </summary>
         public const string Aes128Gcm = "http://www.w3.org/2009/xmlenc11#aes128-gcm";
+        /// <summary>
+        /// Currently not supported. It's possible to provide your own implementation of the algorithm by overriding CryptoProviderFactory and AuthenticatedEncryptionProvider.
+        /// </summary>
         public const string Aes192Gcm = "http://www.w3.org/2009/xmlenc11#aes192-gcm";
+        /// <summary>
+        /// Currently not supported. It's possible to provide your own implementation of the algorithm by overriding CryptoProviderFactory and AuthenticatedEncryptionProvider.
+        /// </summary>
         public const string Aes256Gcm = "http://www.w3.org/2009/xmlenc11#aes256-gcm";
 
         // See: https://www.w3.org/TR/xmlenc-core1/#sec-kw-aes
