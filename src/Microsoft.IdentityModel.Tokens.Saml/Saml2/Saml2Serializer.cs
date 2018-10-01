@@ -2543,10 +2543,18 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
             if (sessionKey == null)
                 throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(LogMessages.IDX13629));
 
-            // AsymmetricSecurityKey is provided:
-            // New session key will be created to encrypt an assertion
-            // Session key will be wrapped with provided AsymmetricSecurityKey
-            if (encryptingCredentials.Key is AsymmetricSecurityKey)
+            // SymmetricSecurityKey is provided:
+            // Session key will not be serialized - EncryptedKey should be null
+            if (encryptingCredentials.Key is SymmetricSecurityKey)
+            {
+                return null;
+            }
+            else if (!(encryptingCredentials.Key is AsymmetricSecurityKey))
+            {
+                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13606, encryptingCredentials.Key)));
+            }
+            // AsymmetricSecurityKey is provided: Session key will be wrapped with provided AsymmetricSecurityKey
+            else  // (encryptingCredentials.Key is AsymmetricSecurityKey)
             {
                 var cryptoProviderFactory = encryptingCredentials.CryptoProviderFactory ?? encryptingCredentials.Key.CryptoProviderFactory;
                 var key = encryptingCredentials.Key;
@@ -2593,16 +2601,6 @@ namespace Microsoft.IdentityModel.Tokens.Saml2
                 }
 
                 return encryptedKey;
-            }
-            else if (encryptingCredentials.Key is SymmetricSecurityKey)
-            {
-                // SymmetricSecurityKey is provided:
-                // Session key will not be serialized - EncryptedKey should be null
-                return null;
-            }
-            else
-            {
-                throw LogExceptionMessage(new Saml2SecurityTokenEncryptedAssertionEncryptionException(FormatInvariant(LogMessages.IDX13606, encryptingCredentials.Key)));
             }
         }
 
