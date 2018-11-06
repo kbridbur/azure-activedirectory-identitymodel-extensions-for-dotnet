@@ -1,0 +1,23 @@
+<Project>
+	<PropertyGroup>
+		<RunApiCompat>true</RunApiCompat>
+		<RunApiCompatForSrc>true</RunApiCompatForSrc>
+		<RunMatchingRefApiCompat>false</RunMatchingRefApiCompat>
+		<ApiCompatEnforceOptionalRules>true</ApiCompatEnforceOptionalRules>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.DotNet.ApiCompat" Version="1.0.0-beta.18555.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ResolvedMatchingContract Include="$(SolutionDir)Tools\apiCompat\contractAssemblies\$(TargetFramework)\$(TargetName).dll " />
+	</ItemGroup>
+
+	<Target Name="ResolveContractDependencyDirectories" BeforeTargets="ValidateApiCompatForSrc">
+		<ItemGroup>
+			<_DependencyDirectoriesTemp Include="@(ReferencePath->'%(RootDir)%(Directory)')" />
+			<_ContractDependencyDirectories Include="%(_DependencyDirectoriesTemp.Identity)" />
+		</ItemGroup>
+	</Target>
+</Project>
