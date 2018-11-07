@@ -4,6 +4,7 @@
 		<RunApiCompatForSrc>true</RunApiCompatForSrc>
 		<RunMatchingRefApiCompat>false</RunMatchingRefApiCompat>
 		<ApiCompatEnforceOptionalRules>true</ApiCompatEnforceOptionalRules>
+		<ApiCompatBaseline>$(SolutionDir)Tools\apiCompat\baseline\ApiCompatBaseline.$(TargetFramework).txt</ApiCompatBaseline>
 	</PropertyGroup>
 
 	<ItemGroup>
